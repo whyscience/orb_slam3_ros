@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.8)
 project(Sophus VERSION 1.1.0)
 
 include(CMakePackageConfigHelpers)
@@ -94,17 +94,17 @@ target_compile_features (sophus INTERFACE
 )
 
 # Add sources as custom target so that they are shown in IDE's
-add_custom_target(other SOURCES ${SOPHUS_OTHER_FILES})
+add_custom_target(sophus_lib SOURCES ${SOPHUS_OTHER_FILES})
 
 # Create 'test' make target using ctest
-option(BUILD_TESTS "Build tests." ON)
+option(BUILD_TESTS "Build tests." OFF)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()
 
 # Create examples make targets using ctest
-option(BUILD_EXAMPLES "Build examples." ON)
+option(BUILD_EXAMPLES "Build examples." OFF)
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()

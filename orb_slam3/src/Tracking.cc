@@ -661,7 +661,7 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
     string sCameraName = fSettings["Camera.type"];
     if(sCameraName == "PinHole")
     {
-        float fx, fy, cx, cy;
+        float fx{}, fy{}, cx{}, cy{};
         mImageScale = 1.f;
 
         // Camera calibration parameters
@@ -817,8 +817,8 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
     }
     else if(sCameraName == "KannalaBrandt8")
     {
-        float fx, fy, cx, cy;
-        float k1, k2, k3, k4;
+        float fx{}, fy{}, cx{}, cy{};
+        float k1{}, k2{}, k3{}, k4{};
         mImageScale = 1.f;
 
         // Camera calibration parameters
@@ -1253,8 +1253,8 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
 bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings)
 {
     bool b_miss_params = false;
-    int nFeatures, nLevels, fIniThFAST, fMinThFAST;
-    float fScaleFactor;
+    int nFeatures{}, nLevels{}, fIniThFAST{}, fMinThFAST{};
+    float fScaleFactor{};
 
     cv::FileNode node = fSettings["ORBextractor.nFeatures"];
     if(!node.empty() && node.isInt())
@@ -1369,9 +1369,7 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
     if(!mInsertKFsLost)
         cout << "Do not insert keyframes when lost visual tracking " << endl;
 
-
-
-    float Ng, Na, Ngw, Naw;
+    float Ng{}, Na{}, Ngw{}, Naw{};
 
     node = fSettings["IMU.Frequency"];
     if(!node.empty() && node.isInt())
@@ -1452,7 +1450,7 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
     cout << "IMU accelerometer noise: " << Na << " m/s^2/sqrt(Hz)" << endl;
     cout << "IMU accelerometer walk: " << Naw << " m/s^3/sqrt(Hz)" << endl;
 
-    mpImuCalib = new IMU::Calib(Tbc,Ng*sf,Na*sf,Ngw/sf,Naw/sf);
+    mpImuCalib = new IMU::Calib(Tbc, Ng * sf, Na * sf, Ngw / sf, Naw / sf);
 
     mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(),*mpImuCalib);
 
@@ -1959,7 +1957,7 @@ void Tracking::Track()
     else
     {
         // System is initialized. Track Frame.
-        bool bOK;
+        bool bOK{};
 
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_StartPosePred = std::chrono::steady_clock::now();

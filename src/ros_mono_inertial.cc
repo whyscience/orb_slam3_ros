@@ -11,7 +11,7 @@ using namespace std;
 class ImuGrabber
 {
 public:
-    ImuGrabber(){};
+    ImuGrabber()= default;
 
     void GrabImu(const sensor_msgs::msg::Imu::SharedPtr imu_msg);
 

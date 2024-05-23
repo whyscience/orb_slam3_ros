@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(orb_slam3_ros2)
+project(orb_slam3_ros)
 
 # Make sure to set this path before building the
 set(ENV{PYTHONPATH} "/opt/ros/humble/lib/python3.10/site-packages/") # Must be set to match your installation
@@ -19,7 +19,7 @@ if (COMPILER_SUPPORTS_CXX17)
 else ()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
 endif ()
-MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
+#MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules) # REDUNDANT?
 
@@ -229,16 +229,12 @@ ament_export_dependencies(
 
 install(DIRECTORY
         launch
+        config
         DESTINATION share/${PROJECT_NAME}
 )
 
 install(DIRECTORY
         orb_slam3/Vocabulary/
         DESTINATION share/${PROJECT_NAME}/orb_slam3/Vocabulary/
-)
-
-install(DIRECTORY
-        orb_slam3/config/
-        DESTINATION share/${PROJECT_NAME}/orb_slam3/config/
 )
 ament_package()

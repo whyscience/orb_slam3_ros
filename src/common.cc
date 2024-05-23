@@ -9,6 +9,7 @@
 // Variables for ORB-SLAM3
 ORB_SLAM3::System *pSLAM;
 ORB_SLAM3::System::eSensor sensor_type = ORB_SLAM3::System::NOT_SET;
+std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 
 // Variables for ROS 2
 std::string world_frame_id, cam_frame_id, imu_frame_id;
@@ -24,24 +25,41 @@ image_transport::Publisher tracking_img_pub;
 // Main functions
 //////////////////////////////////////////////////
 
-bool save_map_srv(const std::shared_ptr<orb_slam3_ros::srv::SaveMap::Request> req,
-                  std::shared_ptr<orb_slam3_ros::srv::SaveMap::Response> res)
+std::string getTimeStamp()
 {
-    res->success = pSLAM->SaveMap(req->name);
+    using std::chrono::system_clock;
+    system_clock::time_point tp = system_clock::now();
+    time_t raw_time = system_clock::to_time_t(tp);
+
+    // tm*使用完后不用delete，因为tm*是由localtime创建的，并且每个线程中会有一个
+    struct tm *time_info = std::localtime(&raw_time);
+    char buffer[80];
+
+    // strftime(buffer, sizeof(buffer), "%H:%M:%S ", time_info);
+    strftime(buffer, sizeof(buffer), "%T", time_info);
+    return buffer;
+}
+
+bool save_map_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
+                  std::shared_ptr<std_srvs::srv::SetBool::Response> res)
+{
+    auto time_str = getTimeStamp() + "_map";
+    res->success = pSLAM->SaveMap(time_str /*req->name*/);
 
     if (res->success)
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Map was saved as %s.osa", req->name.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Map was saved as %s.osa", time_str.c_str());
     else
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Map could not be saved.");
 
     return res->success;
 }
 
-bool save_traj_srv(const std::shared_ptr<orb_slam3_ros::srv::SaveMap::Request> req,
-                   std::shared_ptr<orb_slam3_ros::srv::SaveMap::Response> res)
+bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
+                   std::shared_ptr<std_srvs::srv::SetBool::Response> res)
 {
-    const std::string cam_traj_file = req->name + "_cam_traj.txt";
-    const std::string kf_traj_file = req->name + "_kf_traj.txt";
+    auto time_str = getTimeStamp();
+    const std::string cam_traj_file = /*req->name*/ time_str + "_cam_traj.txt";
+    const std::string kf_traj_file = /*req->name*/ time_str + "_kf_traj.txt";
 
     try
     {
@@ -68,10 +86,9 @@ bool save_traj_srv(const std::shared_ptr<orb_slam3_ros::srv::SaveMap::Request> r
 
 void setup_services(rclcpp::Node::SharedPtr node, std::string node_name)
 {
-    static auto save_map_service =
-            node->create_service<orb_slam3_ros::srv::SaveMap>(node_name + "/save_map", save_map_srv);
+    static auto save_map_service = node->create_service<std_srvs::srv::SetBool>(node_name + "/save_map", save_map_srv);
     static auto save_traj_service =
-            node->create_service<orb_slam3_ros::srv::SaveMap>(node_name + "/save_traj", save_traj_srv);
+            node->create_service<std_srvs::srv::SetBool>(node_name + "/save_traj", save_traj_srv);
 }
 
 void setup_publishers(rclcpp::Node::SharedPtr node, image_transport::ImageTransport &image_transport,
@@ -196,9 +213,7 @@ void publish_tf_transform(Sophus::SE3f T_SE3f, std::string frame_id, std::string
     transform_stamped.transform.translation.y = T_SE3f.translation().y();
     transform_stamped.transform.translation.z = T_SE3f.translation().z();
 
-    static tf2_ros::TransformBroadcaster tf_broadcaster(node);
-
-    tf_broadcaster.sendTransform(transform_stamped);
+    tf_broadcaster->sendTransform(transform_stamped);
 }
 
 void publish_tracking_img(cv::Mat image, rclcpp::Time msg_time)
@@ -266,7 +281,7 @@ void publish_kf_markers(std::vector<Sophus::SE3f> vKFposes, rclcpp::Time msg_tim
     kf_markers.type = visualization_msgs::msg::Marker::SPHERE_LIST;
     kf_markers.action = visualization_msgs::msg::Marker::ADD;
     kf_markers.pose.orientation.w = 1.0;
-    kf_markers.lifetime = rclcpp::Duration(0);
+    kf_markers.lifetime = rclcpp::Duration(0, 0); // 5 seconds and 0 nanoseconds
 
     kf_markers.id = 0;
     kf_markers.scale.x = 0.05;
@@ -375,9 +390,10 @@ sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapP
         {
             Eigen::Vector3d P3Dw = map_points[i]->GetWorldPos().cast<double>();
 
-            tf::Vector3 point_translation(P3Dw.x(), P3Dw.y(), P3Dw.z());
+            tf2::Vector3 point_translation(P3Dw.x(), P3Dw.y(), P3Dw.z());
 
-            float data_array[num_channels] = {point_translation.x(), point_translation.y(), point_translation.z()};
+            float data_array[num_channels] = {(float) point_translation.x(), (float) point_translation.y(),
+                                              (float) point_translation.z()};
 
             memcpy(cloud_data_ptr + (i * cloud.point_step), data_array, num_channels * sizeof(float));
         }

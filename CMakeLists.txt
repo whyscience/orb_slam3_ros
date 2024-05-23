@@ -29,13 +29,14 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(message_filters REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
-# find_package(your_custom_msg_interface REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV 4.2 REQUIRED)
 find_package(Eigen3 3.3.0 REQUIRED) # Matched with Sophus
@@ -65,8 +66,13 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         rclcpp
         rclpy
         std_msgs
+        std_srvs
+        geometry_msgs
         sensor_msgs
-        # your_custom_msg_interface
+        nav_msgs
+        visualization_msgs
+        tf2_ros
+        message_filters
         cv_bridge
         image_transport
         OpenCV

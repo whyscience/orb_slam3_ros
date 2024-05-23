@@ -13,12 +13,15 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/eigen.hpp>
+#include <tf2/utils.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <image_transport/image_transport.hpp>
 
 #include <std_msgs/msg/header.hpp>
+#include "std_srvs/srv/set_bool.hpp" // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include <nav_msgs/msg/odometry.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 
@@ -26,13 +29,13 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include <orb_slam3_ros/srv/save_map.hpp> // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
 
 // ORB-SLAM3-specific libraries
 #include "System.h"
 #include "ImuTypes.h"
 
 extern ORB_SLAM3::System* pSLAM;
+extern std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 extern ORB_SLAM3::System::eSensor sensor_type;
 
 extern std::string world_frame_id, cam_frame_id, imu_frame_id;
@@ -59,8 +62,8 @@ void publish_tf_transform(Sophus::SE3f, std::string, std::string, rclcpp::Time);
 void publish_body_odom(Sophus::SE3f, Eigen::Vector3f, Eigen::Vector3f, rclcpp::Time);
 void publish_kf_markers(std::vector<Sophus::SE3f>, rclcpp::Time);
 
-bool save_map_srv(const std::shared_ptr<orb_slam3_ros::srv::SaveMap::Request>, std::shared_ptr<orb_slam3_ros::srv::SaveMap::Response>);
-bool save_traj_srv(const std::shared_ptr<orb_slam3_ros::srv::SaveMap::Request>, std::shared_ptr<orb_slam3_ros::srv::SaveMap::Response>);
+bool save_map_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request>, std::shared_ptr<std_srvs::srv::SetBool::Response>);
+bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request>, std::shared_ptr<std_srvs::srv::SetBool::Response>);
 
 cv::Mat SE3f_to_cvMat(Sophus::SE3f);
 geometry_msgs::msg::Transform SE3f_to_tfTransform(Sophus::SE3f);

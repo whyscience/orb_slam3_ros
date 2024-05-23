@@ -36,9 +36,15 @@ public:
         sensor_type = ORB_SLAM3::System::MONOCULAR;
         pSLAM = new ORB_SLAM3::System(voc_file_, settings_file_, sensor_type, enable_pangolin_);
 
-        image_transport::ImageTransport it(this);
+
+    }
+
+    void OnInit()
+    {
+        image_transport::ImageTransport it(shared_from_this());//todo move to init function
         sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
                 "/camera/image_raw", 1, std::bind(&ImageGrabber::GrabImage, this, std::placeholders::_1));
+        tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(shared_from_this());
 
         setup_publishers(shared_from_this(), it, this->get_name());
         setup_services(shared_from_this(), this->get_name());
@@ -49,7 +55,7 @@ public:
 private:
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
     std::string voc_file_, settings_file_;
-    bool enable_pangolin_;
+    bool enable_pangolin_{};
 };
 
 void ImageGrabber::GrabImage(const sensor_msgs::msg::Image::SharedPtr msg)
@@ -79,6 +85,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
 
     auto node = std::make_shared<ImageGrabber>();
+    node->OnInit();
 
     rclcpp::spin(node);
 

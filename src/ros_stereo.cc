@@ -11,7 +11,7 @@ using namespace std;
 class ImageGrabber
 {
 public:
-    ImageGrabber(){};
+    ImageGrabber()= default;
 
     void GrabStereo(const sensor_msgs::msg::Image::ConstSharedPtr msgLeft,
                     const sensor_msgs::msg::Image::ConstSharedPtr msgRight);
@@ -87,6 +87,11 @@ void ImageGrabber::GrabStereo(const sensor_msgs::msg::Image::ConstSharedPtr msgL
                               const sensor_msgs::msg::Image::ConstSharedPtr msgRight)
 {
     auto msg_time = msgLeft->header.stamp;
+
+    // static rclcpp::Time msg_time_last = rclcpp::Time(msg_time);
+    // auto dt = (rclcpp::Time(msg_time) - msg_time_last).nanoseconds() / 1e9;
+    // RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Received stereo images. dt = " << dt << "s.");
+    // msg_time_last = msgLeft->header.stamp;
 
     // Copy the ros image message to cv::Mat.
     cv_bridge::CvImageConstPtr cv_ptrLeft, cv_ptrRight;

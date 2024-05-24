@@ -99,10 +99,10 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
 //////////////////////////////////////////////////
 // Functions
 //////////////////////////////////////////////////
-
 void ImageGrabber::GrabImage(const sensor_msgs::msg::Image::SharedPtr img_msg)
 {
     mBufMutex.lock();

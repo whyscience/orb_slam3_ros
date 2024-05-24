@@ -78,9 +78,9 @@ int main(int argc, char **argv)
     std::string imu_topic = "/imu";
 
     //debug code
-    img_left_topic = "/cam0/image_raw";
-    img_right_topic = "/cam1/image_raw";
-    imu_topic = "/imu0";
+    // img_left_topic = "/cam0/image_raw";
+    // img_right_topic = "/cam1/image_raw";
+    // imu_topic = "/imu0";
 
     // Maximum delay, 5 seconds * 200Hz = 1000 samples
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(

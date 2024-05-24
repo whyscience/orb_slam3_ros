@@ -84,15 +84,15 @@ bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
     return res->success;
 }
 
-void setup_services(rclcpp::Node::SharedPtr node, const std::string& node_name)
+void setup_services(const rclcpp::Node::SharedPtr& node, const std::string &node_name)
 {
     static auto save_map_service = node->create_service<std_srvs::srv::SetBool>(node_name + "/save_map", save_map_srv);
     static auto save_traj_service =
             node->create_service<std_srvs::srv::SetBool>(node_name + "/save_traj", save_traj_srv);
 }
 
-void setup_publishers(const rclcpp::Node::SharedPtr& node, image_transport::ImageTransport &image_transport,
-                      const std::string& node_name)
+void setup_publishers(const rclcpp::Node::SharedPtr &node, image_transport::ImageTransport &image_transport,
+                      const std::string &node_name)
 {
     pose_pub = node->create_publisher<geometry_msgs::msg::PoseStamped>(node_name + "/camera_pose", 1);
 
@@ -113,7 +113,7 @@ void setup_publishers(const rclcpp::Node::SharedPtr& node, image_transport::Imag
     }
 }
 
-void publish_topics(const rclcpp::Time& msg_time, const Eigen::Vector3f& Wbb)
+void publish_topics(const rclcpp::Time &msg_time, const Eigen::Vector3f &Wbb)
 {
     Sophus::SE3f Twc = pSLAM->GetCamTwc();
 
@@ -150,7 +150,7 @@ void publish_topics(const rclcpp::Time& msg_time, const Eigen::Vector3f& Wbb)
 }
 
 void publish_body_odom(Sophus::SE3f Twb_SE3f, Eigen::Vector3f Vwb_E3f, Eigen::Vector3f ang_vel_body,
-                       const rclcpp::Time& msg_time)
+                       const rclcpp::Time &msg_time)
 {
     nav_msgs::msg::Odometry odom_msg;
     odom_msg.child_frame_id = imu_frame_id;
@@ -177,7 +177,7 @@ void publish_body_odom(Sophus::SE3f Twb_SE3f, Eigen::Vector3f Vwb_E3f, Eigen::Ve
     odom_pub->publish(odom_msg);
 }
 
-void publish_camera_pose(Sophus::SE3f Tcw_SE3f, const rclcpp::Time& msg_time)
+void publish_camera_pose(Sophus::SE3f Tcw_SE3f, const rclcpp::Time &msg_time)
 {
     geometry_msgs::msg::PoseStamped pose_msg;
     pose_msg.header.frame_id = world_frame_id;
@@ -195,7 +195,8 @@ void publish_camera_pose(Sophus::SE3f Tcw_SE3f, const rclcpp::Time& msg_time)
     pose_pub->publish(pose_msg);
 }
 
-void publish_tf_transform(Sophus::SE3f T_SE3f, std::string frame_id, std::string child_frame_id, const rclcpp::Time& msg_time)
+void publish_tf_transform(Sophus::SE3f T_SE3f, std::string frame_id, std::string child_frame_id,
+                          const rclcpp::Time &msg_time)
 {
     geometry_msgs::msg::TransformStamped transform_stamped;
 
@@ -216,7 +217,7 @@ void publish_tf_transform(Sophus::SE3f T_SE3f, std::string frame_id, std::string
     tf_broadcaster->sendTransform(transform_stamped);
 }
 
-auto publish_tracking_img(const cv::Mat& image, const rclcpp::Time& msg_time)-> void
+auto publish_tracking_img(const cv::Mat &image, const rclcpp::Time &msg_time) -> void
 {
     std_msgs::msg::Header header;
 
@@ -231,7 +232,7 @@ auto publish_tracking_img(const cv::Mat& image, const rclcpp::Time& msg_time)-> 
 }
 
 void publish_keypoints(std::vector<ORB_SLAM3::MapPoint *> tracked_map_points,
-                       std::vector<cv::KeyPoint> tracked_keypoints, const rclcpp::Time& msg_time)
+                       std::vector<cv::KeyPoint> tracked_keypoints, const rclcpp::Time &msg_time)
 {
     std::vector<cv::KeyPoint> finalKeypoints;
 
@@ -254,14 +255,14 @@ void publish_keypoints(std::vector<ORB_SLAM3::MapPoint *> tracked_map_points,
 }
 
 
-void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint *> tracked_points, const rclcpp::Time& msg_time)
+void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint *> tracked_points, const rclcpp::Time &msg_time)
 {
     sensor_msgs::msg::PointCloud2 cloud = mappoint_to_pointcloud(tracked_points, msg_time);
 
     tracked_mappoints_pub->publish(cloud);
 }
 
-void publish_all_points(std::vector<ORB_SLAM3::MapPoint *> map_points, const rclcpp::Time& msg_time)
+void publish_all_points(std::vector<ORB_SLAM3::MapPoint *> map_points, const rclcpp::Time &msg_time)
 {
     sensor_msgs::msg::PointCloud2 cloud = mappoint_to_pointcloud(map_points, msg_time);
 
@@ -269,7 +270,7 @@ void publish_all_points(std::vector<ORB_SLAM3::MapPoint *> map_points, const rcl
 }
 
 // More details: http://docs.ros.org/en/api/visualization_msgs/html/msg/Marker.html
-void publish_kf_markers(std::vector<Sophus::SE3f> vKFposes, const rclcpp::Time& msg_time)
+void publish_kf_markers(std::vector<Sophus::SE3f> vKFposes, const rclcpp::Time &msg_time)
 {
     int numKFs = vKFposes.size();
     if (numKFs == 0)
@@ -306,7 +307,8 @@ void publish_kf_markers(std::vector<Sophus::SE3f> vKFposes, const rclcpp::Time& 
 // Miscellaneous functions
 //////////////////////////////////////////////////
 
-sensor_msgs::msg::PointCloud2 keypoints_to_pointcloud(std::vector<cv::KeyPoint> &keypoints, const rclcpp::Time& msg_time)
+sensor_msgs::msg::PointCloud2 keypoints_to_pointcloud(std::vector<cv::KeyPoint> &keypoints,
+                                                      const rclcpp::Time &msg_time)
 {
     const int num_channels = 3; // x y z
 
@@ -349,7 +351,7 @@ sensor_msgs::msg::PointCloud2 keypoints_to_pointcloud(std::vector<cv::KeyPoint> 
 }
 
 sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint *> map_points,
-                                                     const rclcpp::Time& msg_time)
+                                                     const rclcpp::Time &msg_time)
 {
     const int num_channels = 3; // x y z
 
@@ -401,7 +403,7 @@ sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapP
     return cloud;
 }
 
-cv::Mat SE3f_to_cvMat(const Sophus::SE3f& T_SE3f)
+cv::Mat SE3f_to_cvMat(const Sophus::SE3f &T_SE3f)
 {
     cv::Mat T_cvmat;
 

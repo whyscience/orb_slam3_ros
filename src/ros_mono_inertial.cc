@@ -11,7 +11,7 @@ using namespace std;
 class ImuGrabber
 {
 public:
-    ImuGrabber()= default;
+    ImuGrabber() = default;
 
     void GrabImu(const sensor_msgs::msg::Imu::SharedPtr imu_msg);
 
@@ -192,7 +192,7 @@ void ImageGrabber::SyncWithImu()
             mpImuGb->mBufMutex.unlock();
 
             // ORB-SLAM3 runs in TrackMonocular()
-            /*Sophus::SE3f Tcw = */pSLAM->TrackMonocular(im, tIm, vImuMeas);
+            /*Sophus::SE3f Tcw = */ pSLAM->TrackMonocular(im, tIm, vImuMeas);
 
             publish_topics(msg_time, Wbb);
         }

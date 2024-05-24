@@ -183,21 +183,21 @@ add_executable(ros_mono_inertial src/ros_mono_inertial.cc src/common.cc)
 ament_target_dependencies(ros_mono_inertial PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(ros_mono_inertial PUBLIC orb_slam3_lib)
 
-#add_executable(ros_stereo src/ros_stereo.cc src/common.cc)
-#ament_target_dependencies(ros_stereo PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
-#target_link_libraries(ros_stereo PUBLIC orb_slam3_lib)
-#
-#add_executable(ros_stereo_inertial src/ros_stereo_inertial.cc src/common.cc)
-#ament_target_dependencies(ros_stereo_inertial PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
-#target_link_libraries(ros_stereo_inertial PUBLIC orb_slam3_lib)
-#
-#add_executable(ros_rgbd src/ros_rgbd.cc src/common.cc)
-#ament_target_dependencies(ros_rgbd PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
-#target_link_libraries(ros_rgbd orb_slam3_lib)
-#
-#add_executable(ros_rgbd_inertial src/ros_rgbd_inertial.cc src/common.cc)
-#ament_target_dependencies(ros_rgbd_inertial PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
-#target_link_libraries(ros_rgbd_inertial PUBLIC orb_slam3_lib)
+add_executable(ros_stereo src/ros_stereo.cc src/common.cc)
+ament_target_dependencies(ros_stereo PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(ros_stereo PUBLIC orb_slam3_lib)
+
+add_executable(ros_stereo_inertial src/ros_stereo_inertial.cc src/common.cc)
+ament_target_dependencies(ros_stereo_inertial PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(ros_stereo_inertial PUBLIC orb_slam3_lib)
+
+add_executable(ros_rgbd src/ros_rgbd.cc src/common.cc)
+ament_target_dependencies(ros_rgbd PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(ros_rgbd PUBLIC orb_slam3_lib)
+
+add_executable(ros_rgbd_inertial src/ros_rgbd_inertial.cc src/common.cc)
+ament_target_dependencies(ros_rgbd_inertial PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(ros_rgbd_inertial PUBLIC orb_slam3_lib)
 
 # Install all the header files in package/package/include
 install(DIRECTORY include/
@@ -208,14 +208,11 @@ install(DIRECTORY include/
 install(TARGETS orb_slam3_lib
         ros_mono
         ros_mono_inertial
-#        ros_stereo
-#        ros_stereo_inertial
-#        ros_rgbd
-#        ros_rgbd_inertial
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION lib/${PROJECT_NAME}
-        INCLUDES DESTINATION include/${PROJECT_NAME}
+        ros_stereo
+        ros_stereo_inertial
+        ros_rgbd
+        ros_rgbd_inertial
+        DESTINATION lib/${PROJECT_NAME}
 )
 
 # Tell downstream packages where to find the headers

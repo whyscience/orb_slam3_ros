@@ -47,7 +47,7 @@ extern rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr tracked_mappo
 extern rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr all_mappoints_pub;
 extern image_transport::Publisher tracking_img_pub;
 
-void setup_services(rclcpp::Node::SharedPtr, const std::string&);
+void setup_services(const rclcpp::Node::SharedPtr&, const std::string&);
 void setup_publishers(const rclcpp::Node::SharedPtr&, image_transport::ImageTransport&, const std::string&);
 void publish_topics(const rclcpp::Time&, const Eigen::Vector3f& = Eigen::Vector3f::Zero());
 

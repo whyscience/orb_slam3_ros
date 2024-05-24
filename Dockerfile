@@ -33,9 +33,7 @@ RUN mkdir -p ws_orb_slam3/src && \
     cd ws_orb_slam3/src && \
     git clone https://github.com/whyscience/orb_slam3_ros.git && \
     cd .. && \
-    #catkin config --extend /opt/ros/${ROS_DISTRO} && \
-    source /opt/ros/${ROS_DISTRO}/setup.bash && \
-    colcon build --symlink-install
+    /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
 
 RUN echo "source /root/ws_orb_slam3/install/setup.bash" >> /root/.bashrc
 

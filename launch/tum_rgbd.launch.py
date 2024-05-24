@@ -43,17 +43,17 @@ def generate_launch_description():
             arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_rgbd.rviz')]
         ),
 
-        Node(
-            package='hector_trajectory_server',
-            executable='hector_trajectory_server',
-            name='trajectory_server_orb_slam3',
-            namespace='orb_slam3_ros',
-            output='screen',
-            parameters=[
-                {'/target_frame_name': '/world'},
-                {'/source_frame_name': '/camera'},
-                {'/trajectory_update_rate': 20.0},
-                {'/trajectory_publish_rate': 20.0}
-            ]
-        )
+        # Node(
+        #     package='hector_trajectory_server',
+        #     executable='hector_trajectory_server',
+        #     name='trajectory_server_orb_slam3',
+        #     namespace='orb_slam3_ros',
+        #     output='screen',
+        #     parameters=[
+        #         {'/target_frame_name': '/world'},
+        #         {'/source_frame_name': '/camera'},
+        #         {'/trajectory_update_rate': 20.0},
+        #         {'/trajectory_publish_rate': 20.0}
+        #     ]
+        # )
     ])

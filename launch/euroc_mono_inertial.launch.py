@@ -36,25 +36,25 @@ def generate_launch_description():
             ]
         ),
 
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz',
-            output='screen',
-            arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_with_imu.rviz')]
-        ),
+        # Node(
+        #     package='rviz2',
+        #     executable='rviz2',
+        #     name='rviz',
+        #     output='screen',
+        #     arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_with_imu.rviz')]
+        # ),
 
-        Node(
-            package='hector_trajectory_server',
-            executable='hector_trajectory_server',
-            name='trajectory_server_orb_slam3',
-            namespace='orb_slam3_ros',
-            output='screen',
-            parameters=[
-                {'/target_frame_name': '/world'},
-                {'/source_frame_name': '/imu'},
-                {'/trajectory_update_rate': 20.0},
-                {'/trajectory_publish_rate': 20.0}
-            ]
-        )
+        # Node(
+        #     package='hector_trajectory_server',
+        #     executable='hector_trajectory_server',
+        #     name='trajectory_server_orb_slam3',
+        #     namespace='orb_slam3_ros',
+        #     output='screen',
+        #     parameters=[
+        #         {'/target_frame_name': '/world'},
+        #         {'/source_frame_name': '/imu'},
+        #         {'/trajectory_update_rate': 20.0},
+        #         {'/trajectory_publish_rate': 20.0}
+        #     ]
+        # )
     ])

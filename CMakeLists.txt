@@ -207,7 +207,7 @@ install(DIRECTORY include/
 # Install our node and library
 install(TARGETS orb_slam3_lib
         ros_mono
-#        ros_mono_inertial
+        ros_mono_inertial
 #        ros_stereo
 #        ros_stereo_inertial
 #        ros_rgbd

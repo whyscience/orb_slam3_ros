@@ -49,10 +49,10 @@ int main(int argc, char **argv)
     image_transport::ImageTransport image_transport(node);
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>(node_name + ".voc_file", "file_not_set");
-    node->declare_parameter<std::string>(node_name + ".settings_file", "file_not_set");
-    node->get_parameter(node_name + ".voc_file", voc_file);
-    node->get_parameter(node_name + ".settings_file", settings_file);
+    node->declare_parameter<std::string>("voc_file", "file_not_set");
+    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->get_parameter("voc_file", voc_file);
+    node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
     if (voc_file == "file_not_set" || settings_file == "file_not_set")
@@ -62,14 +62,14 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    node->declare_parameter<std::string>(node_name + ".world_frame_id", "map");
-    node->declare_parameter<std::string>(node_name + ".cam_frame_id", "camera");
-    node->get_parameter(node_name + ".world_frame_id", world_frame_id);
-    node->get_parameter(node_name + ".cam_frame_id", cam_frame_id);
+    node->declare_parameter<std::string>("world_frame_id", "map");
+    node->declare_parameter<std::string>("cam_frame_id", "camera");
+    node->get_parameter("world_frame_id", world_frame_id);
+    node->get_parameter("cam_frame_id", cam_frame_id);
 
     bool enable_pangolin{};
-    node->declare_parameter<bool>(node_name + ".enable_pangolin", true);
-    node->get_parameter(node_name + ".enable_pangolin", enable_pangolin);
+    node->declare_parameter<bool>("enable_pangolin", true);
+    node->get_parameter("enable_pangolin", enable_pangolin);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System::eSensor sensor_type = ORB_SLAM3::System::IMU_MONOCULAR;

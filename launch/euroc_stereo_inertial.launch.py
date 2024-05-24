@@ -37,13 +37,13 @@ def generate_launch_description():
             ]
         ),
 
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz',
-            output='screen',
-            arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_with_imu.rviz')]
-        ),
+        # Node(
+        #     package='rviz2',
+        #     executable='rviz2',
+        #     name='rviz',
+        #     output='screen',
+        #     arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_with_imu.rviz')]
+        # ),
 
         # Node(
         #     package='hector_trajectory_server',

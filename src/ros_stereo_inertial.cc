@@ -46,19 +46,13 @@ int main(int argc, char **argv)
 
     auto node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>("voc_file", "file_not_set");
-    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->declare_parameter<std::string>("voc_file", default_voc_file);
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/Stereo-Inertial/EuRoC.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
-
-    if (voc_file == "file_not_set" || settings_file == "file_not_set")
-    {
-        RCLCPP_ERROR(node->get_logger(), "Please provide voc_file and settings_file in the launch file");
-        rclcpp::shutdown();
-        return 1;
-    }
 
     std::string world_frame_id, cam_frame_id, imu_frame_id;
     node->declare_parameter<std::string>("world_frame_id", "world");
@@ -79,13 +73,22 @@ int main(int argc, char **argv)
     ImuGrabber imugb;
     ImageGrabber igb(&imugb);
 
+    std::string img_left_topic = "/camera/right/image_raw";
+    std::string img_right_topic = "/camera/left/image_raw";
+    std::string imu_topic = "/imu";
+
+    //debug code
+    img_left_topic = "/cam0/image_raw";
+    img_right_topic = "/cam1/image_raw";
+    imu_topic = "/imu0";
+
     // Maximum delay, 5 seconds * 200Hz = 1000 samples
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu", 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
+            imu_topic, 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
     auto sub_img_left = node->create_subscription<sensor_msgs::msg::Image>(
-            "/camera/left/image_raw", 100, std::bind(&ImageGrabber::GrabImageLeft, &igb, std::placeholders::_1));
+            img_left_topic, 100, std::bind(&ImageGrabber::GrabImageLeft, &igb, std::placeholders::_1));
     auto sub_img_right = node->create_subscription<sensor_msgs::msg::Image>(
-            "/camera/right/image_raw", 100, std::bind(&ImageGrabber::GrabImageRight, &igb, std::placeholders::_1));
+            img_right_topic, 100, std::bind(&ImageGrabber::GrabImageRight, &igb, std::placeholders::_1));
 
     setup_publishers(node, image_transport, node_name);
     setup_services(node, node_name);
@@ -226,9 +229,9 @@ void ImageGrabber::SyncWithImu()
             }
 
             // ORB-SLAM3 runs in TrackStereo()
-            Sophus::SE3f Tcw = pSLAM->TrackStereo(imLeft, imRight, tImLeft, vImuMeas);
-
-            publish_topics(rclcpp::Time(imgLeftBuf.front()->header.stamp), Wbb);
+            /*Sophus::SE3f Tcw = */pSLAM->TrackStereo(imLeft, imRight, tImLeft, vImuMeas);
+            if(!imgLeftBuf.empty())
+                publish_topics(rclcpp::Time(imgLeftBuf.front()->header.stamp), Wbb);
 
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }

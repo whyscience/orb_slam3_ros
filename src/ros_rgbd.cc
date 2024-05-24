@@ -28,19 +28,13 @@ int main(int argc, char **argv)
 
     auto node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>("voc_file", "file_not_set");
-    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->declare_parameter<std::string>("voc_file", default_voc_file);
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/RGB-D/RealSense_D435i.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
-
-    if (voc_file == "file_not_set" || settings_file == "file_not_set")
-    {
-        RCLCPP_ERROR(node->get_logger(), "Please provide voc_file and settings_file in the launch file");
-        rclcpp::shutdown();
-        return 1;
-    }
 
     std::string world_frame_id, cam_frame_id;
     node->declare_parameter<std::string>("world_frame_id", "map");
@@ -58,11 +52,19 @@ int main(int argc, char **argv)
 
     ImageGrabber igb;
 
-    using sync_pol = message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image>;
+    std::string rgb_img_topic = "/camera/rgb/image_raw";
+    std::string depth_img_topic = "/camera/depth_registered/image_raw";
+    std::string imu_topic = "/imu";
+
+    //debug code
+    // rgb_img_topic = "/cam0/image_raw";
+    // depth_img_topic = "/cam1/image_raw";
+    // imu_topic = "/imu0";
+
     auto sub_rgb_img =
-            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, "/camera/rgb/image_raw");
+            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, rgb_img_topic);
     auto sub_depth_img = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-            node, "/camera/depth_registered/image_raw");
+            node, depth_img_topic);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image>
             approximate_sync_policy;
     auto syncApproximate = std::make_shared<message_filters::Synchronizer<approximate_sync_policy>>(

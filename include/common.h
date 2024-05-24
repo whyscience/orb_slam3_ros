@@ -39,6 +39,7 @@ extern std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 extern ORB_SLAM3::System::eSensor sensor_type;
 
 extern std::string world_frame_id, cam_frame_id, imu_frame_id;
+inline std::string default_voc_file = std::string(PROJECT_SOURCE_DIR) + "/orb_slam3/Vocabulary/ORBvoc.txt.bin";
 
 extern rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
 extern rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;

@@ -13,20 +13,14 @@ class ImageGrabber : public rclcpp::Node
 public:
     ImageGrabber() : Node("Mono")
     {
-        this->declare_parameter<std::string>("voc_file", "file_not_set");
-        this->declare_parameter<std::string>("settings_file", "file_not_set");
+        this->declare_parameter<std::string>("voc_file", default_voc_file);
+        this->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/Monocular/EuRoC.yaml");
         this->declare_parameter<std::string>("world_frame_id", "map");
         this->declare_parameter<std::string>("cam_frame_id", "camera");
         this->declare_parameter<bool>("enable_pangolin", true);
 
         this->get_parameter("voc_file", voc_file_);
         this->get_parameter("settings_file", settings_file_);
-
-        if (voc_file_ == "file_not_set" || settings_file_ == "file_not_set")
-        {
-            RCLCPP_ERROR(this->get_logger(), "Please provide voc_file and settings_file in the launch file");
-            rclcpp::shutdown();
-        }
 
         this->get_parameter("world_frame_id", world_frame_id);
         this->get_parameter("cam_frame_id", cam_frame_id);
@@ -35,13 +29,11 @@ public:
         // Create SLAM system. It initializes all system threads and gets ready to process frames.
         sensor_type = ORB_SLAM3::System::MONOCULAR;
         pSLAM = new ORB_SLAM3::System(voc_file_, settings_file_, sensor_type, enable_pangolin_);
-
-
     }
 
     void OnInit()
     {
-        image_transport::ImageTransport it(shared_from_this());//todo move to init function
+        image_transport::ImageTransport it(shared_from_this());
         sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
                 "/camera/image_raw", 1, std::bind(&ImageGrabber::GrabImage, this, std::placeholders::_1));
         tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(shared_from_this());
@@ -73,7 +65,7 @@ void ImageGrabber::GrabImage(const sensor_msgs::msg::Image::SharedPtr msg)
     }
 
     // ORB-SLAM3 runs in TrackMonocular()
-    Sophus::SE3f Tcw = pSLAM->TrackMonocular(cv_ptr->image, rclcpp::Time(msg->header.stamp).seconds());
+    /*Sophus::SE3f Tcw = */pSLAM->TrackMonocular(cv_ptr->image, rclcpp::Time(msg->header.stamp).seconds());
 
     rclcpp::Time msg_time = msg->header.stamp;
 

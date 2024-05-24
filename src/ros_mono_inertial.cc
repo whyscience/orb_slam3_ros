@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("orb_slam3");
     rclcpp::Logger logger = node->get_logger();
-    RCLCPP_INFO(logger, "Node started");
+    RCLCPP_INFO(logger, "orb_slam3 started");
 
     if (argc > 1)
     {
@@ -47,27 +47,21 @@ int main(int argc, char **argv)
 
     std::string node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+
     std::string imu_topic = "/imu";
     std::string image_topic = "/camera/image_raw";
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>("voc_file", "file_not_set");
-    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->declare_parameter<std::string>("voc_file", default_voc_file);
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/EuRoC.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
-    voc_file = "/home/eric/ws_orb_slam3_ros2/src/orb_slam3_ros/orb_slam3/Vocabulary/ORBvoc.txt.bin";
-    settings_file = "/home/eric/ws_orb_slam3_ros2/src/orb_slam3_ros/config/Monocular-Inertial/EuRoC.yaml";
+    //debug code
     imu_topic = "/imu0";
     image_topic = "/cam0/image_raw";
-
-    if (voc_file == "file_not_set" || settings_file == "file_not_set")
-    {
-        RCLCPP_ERROR(logger, "Please provide voc_file and settings_file in the launch file");
-        rclcpp::shutdown();
-        return 1;
-    }
 
     node->declare_parameter<std::string>("world_frame_id", "map");
     node->declare_parameter<std::string>("cam_frame_id", "camera");

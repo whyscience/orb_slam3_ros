@@ -29,19 +29,21 @@ int main(int argc, char **argv)
 
     auto node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>("voc_file", "file_not_set");
-    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->declare_parameter<std::string>("voc_file", default_voc_file);
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/Stereo/EuRoC.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
+    RCLCPP_INFO(node->get_logger(), "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
-    if (voc_file == "file_not_set" || settings_file == "file_not_set")
-    {
-        RCLCPP_ERROR(node->get_logger(), "Please provide voc_file and settings_file in the launch file");
-        rclcpp::shutdown();
-        return 1;
-    }
+    std::string img_left_topic = "/camera/right/image_raw";
+    std::string img_right_topic = "/camera/left/image_raw";
+
+    //debug code
+    img_left_topic = "/cam0/image_raw";
+    img_right_topic = "/cam1/image_raw";
 
     std::string world_frame_id, cam_frame_id;
     node->declare_parameter<std::string>("world_frame_id", "map");
@@ -59,10 +61,8 @@ int main(int argc, char **argv)
 
     ImageGrabber igb;
 
-    auto sub_img_left =
-            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, "/camera/left/image_raw");
-    auto sub_img_right =
-            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, "/camera/right/image_raw");
+    auto sub_img_left = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, img_left_topic);
+    auto sub_img_right = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, img_right_topic);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image> sync_pol;
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), *sub_img_left, *sub_img_right);
     sync.registerCallback(std::bind(&ImageGrabber::GrabStereo, &igb, std::placeholders::_1, std::placeholders::_2));
@@ -102,7 +102,7 @@ void ImageGrabber::GrabStereo(const sensor_msgs::msg::Image::ConstSharedPtr msgL
     }
 
     // ORB-SLAM3 runs in TrackStereo()
-    Sophus::SE3f Tcw = pSLAM->TrackStereo(cv_ptrLeft->image, cv_ptrRight->image, rclcpp::Time(msg_time).seconds());
+    /*Sophus::SE3f Tcw = */pSLAM->TrackStereo(cv_ptrLeft->image, cv_ptrRight->image, rclcpp::Time(msg_time).seconds());
 
     publish_topics(msg_time);
 }

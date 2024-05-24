@@ -12,7 +12,7 @@ using namespace std;
 class ImuGrabber
 {
 public:
-    ImuGrabber(){};
+    ImuGrabber()= default;
     void GrabImu(const sensor_msgs::msg::Imu::SharedPtr imu_msg);
 
     queue<sensor_msgs::msg::Imu::SharedPtr> imuBuf;
@@ -39,19 +39,13 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("orb_slam3");
     image_transport::ImageTransport image_transport(node);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     std::string voc_file, settings_file;
-    node->declare_parameter<std::string>("voc_file", "file_not_set");
-    node->declare_parameter<std::string>("settings_file", "file_not_set");
+    node->declare_parameter<std::string>("voc_file", default_voc_file);
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/RGB-D-Inertial/RealSense_D435i.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
-
-    if (voc_file == "file_not_set" || settings_file == "file_not_set")
-    {
-        RCLCPP_ERROR(node->get_logger(), "Please provide voc_file and settings_file in the launch file");
-        rclcpp::shutdown();
-        return 1;
-    }
 
     bool enable_pangolin{};
     node->declare_parameter<bool>("enable_pangolin", true);
@@ -72,13 +66,22 @@ int main(int argc, char **argv)
     ImuGrabber imugb;
     ImageGrabber igb(&imugb);
 
+    std::string rgb_img_topic = "/camera/rgb/image_raw";
+    std::string depth_img_topic = "/camera/depth_registered/image_raw";
+    std::string imu_topic = "/imu";
+
+    //debug code
+    // rgb_img_topic = "/cam0/image_raw";
+    // depth_img_topic = "/cam1/image_raw";
+    // imu_topic = "/imu0";
+
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu", 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
+            imu_topic, 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
 
     auto sub_rgb_img =
-            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, "/camera/rgb/image_raw");
+            std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, rgb_img_topic);
     auto sub_depth_img = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(
-            node, "/camera/depth_registered/image_raw");
+            node, depth_img_topic);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image>
             approximate_sync_policy;
@@ -186,7 +189,7 @@ void ImageGrabber::SyncWithImu()
             mpImuGb->mBufMutex.unlock();
 
             // ORB-SLAM3 runs in TrackRGBD()
-            Sophus::SE3f Tcw = pSLAM->TrackRGBD(im, depth, tIm, vImuMeas);
+            /*Sophus::SE3f Tcw = */pSLAM->TrackRGBD(im, depth, tIm, vImuMeas);
 
             publish_topics(msg_time, Wbb);
         }

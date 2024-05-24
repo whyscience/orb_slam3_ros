@@ -21,7 +21,7 @@ else ()
 endif ()
 #MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
-LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules) # REDUNDANT?
+add_definitions(-DPROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 
 # find dependencies
 find_package(ament_cmake REQUIRED)

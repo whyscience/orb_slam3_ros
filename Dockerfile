@@ -1,7 +1,7 @@
-FROM amd64/ros:noetic-perception-focal
+FROM amd64/ros:humble-perception-jammy
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG ROS_DISTRO=noetic
+ARG ROS_DISTRO=humble
 
 #
 # install ORBSLAM3 ROS package
@@ -14,8 +14,8 @@ RUN apt-get update && \
         build-essential \
         cmake \
         libeigen3-dev \
-        ros-${ROS_DISTRO}-hector-trajectory-server \
-        python3-catkin-tools \
+        # ros-${ROS_DISTRO}-hector-trajectory-server \
+        ros-dev-tools \
         libopencv-dev && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
@@ -29,15 +29,15 @@ RUN git clone https://github.com/stevenlovegrove/Pangolin.git && \
     make -j && \
     make install
 
-RUN mkdir -p catkin_ws/src && \
-    cd catkin_ws/src && \
-    git clone https://github.com/thien94/orb_slam3_ros.git && \
+RUN mkdir -p ws_orb_slam3/src && \
+    cd ws_orb_slam3/src && \
+    git clone https://github.com/whyscience/orb_slam3_ros.git && \
     cd .. && \
-    catkin config \
-      --extend /opt/ros/noetic && \
-    catkin build
+    #catkin config --extend /opt/ros/${ROS_DISTRO} && \
+    source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    colcon build --symlink-install
 
-RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+RUN echo "source /root/ws_orb_slam3/install/setup.bash" >> /root/.bashrc
 
 #
 # install RealSenseSDK / RealSense ROS wrapper

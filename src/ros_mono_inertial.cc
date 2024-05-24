@@ -36,7 +36,7 @@ public:
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("RGBD");
+    auto node = rclcpp::Node::make_shared("Mono_Inertial");
     rclcpp::Logger logger = node->get_logger();
     RCLCPP_INFO(logger, "Node started");
 
@@ -53,6 +53,7 @@ int main(int argc, char **argv)
     node->declare_parameter<std::string>(node_name + ".settings_file", "file_not_set");
     node->get_parameter(node_name + ".voc_file", voc_file);
     node->get_parameter(node_name + ".settings_file", settings_file);
+    RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
     if (voc_file == "file_not_set" || settings_file == "file_not_set")
     {

@@ -2,7 +2,7 @@
 
 A ROS2 implementation of [ORB-SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3) V1.0 that focuses on the ROS part.
 
-This package uses ```colcon build```. Tested on Ubuntu 22.04 + ROS2 Humble 
+This package uses ```colcon build```. Tested on Ubuntu 22.04 + ROS2 Humble
 
 ## 1. Prerequisites
 
@@ -56,7 +56,7 @@ colcon build --symlink-install
 
 ## 3. Run Examples
 
-### Mono mode with [NTU VIRAL](https://ntu-aris.github.io/ntu_viral_dataset/)'s [`eee_01.bag`](https://researchdata.ntu.edu.sg/api/access/datafile/68133):
+### Mono mode with [NTU VIRAL](https://ntu-aris.github.io/ntu_viral_dataset/)'s [`eee_01`](https://researchdata.ntu.edu.sg/api/access/datafile/68133):
 
 ```bash
 # In one terminal:
@@ -79,7 +79,9 @@ ros2 launch orb_slam3_ros kitti_stereo.launch.py
 ros2 bag play kitti_2011_09_26_drive_0002_synced
 ```
 
-### Mono-inertial mode with [EuRoC](https://projects.asl.ethz.ch/datasets/doku.php?id=kmavvisualinertialdatasets)'s [`MH_01_easy.bag`]( http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/machine_hall/MH_01_easy/MH_01_easy.bag):
+### Mono-inertial mode with [EuRoC](https://docs.openvins.com/gs-datasets.html)'s [`MH_01_easy`]( http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/machine_hall/MH_01_easy/MH_01_easy):
+
+**We only have this ros2 bag file for now, you can download the original dataset and convert it to ros2 bag file.**
 
 ```bash
 # In one terminal:
@@ -88,7 +90,7 @@ ros2 launch orb_slam3_ros euroc_mono_inertial.launch.py
 ros2 bag play MH_01_easy
 ```
 
-### Stereo-inertial mode with [TUM-VI](https://vision.in.tum.de/data/datasets/visual-inertial-dataset)'s [`dataset-corridor1_512_16.bag`](https://vision.in.tum.de/tumvi/calibrated/512_16/dataset-corridor1_512_16.bag)
+### Stereo-inertial mode with [TUM-VI](https://vision.in.tum.de/data/datasets/visual-inertial-dataset)'s [`dataset-corridor1_512_16`](https://vision.in.tum.de/tumvi/calibrated/512_16/dataset-corridor1_512_16)
 
 ```bash
 # In one terminal:
@@ -97,7 +99,7 @@ ros2 launch orb_slam3_ros tum_vi_stereo_inertial.launch.py
 ros2 bag play dataset-corridor1_512_16
 ```
 
-### RGB-D mode with [TUM](http://vision.in.tum.de/data/datasets/rgbd-dataset/download)'s [`rgbd_dataset_freiburg1_xyz.bag`](https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz.bag)
+### RGB-D mode with [TUM](http://vision.in.tum.de/data/datasets/rgbd-dataset/download)'s [`rgbd_dataset_freiburg1_xyz`](https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz)
 
 ```bash
 # In one terminal:
@@ -109,10 +111,10 @@ ros2 bag play rgbd_dataset_freiburg1_xyz
 - **Note**: change `TUMX.yaml` to `TUM1.yaml`,`TUM2.yaml` or `TUM3.yaml` for freiburg1, freiburg2 and freiburg3
   sequences respectively.
 
-### RGB-D-Inertial mode with [VINS-RGBD](https://github.com/STAR-Center/VINS-RGBD)'s [`Normal.bag`](https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz.bag)
+### RGB-D-Inertial mode with [VINS-RGBD](https://github.com/STAR-Center/VINS-RGBD)'s [`Normal`](https://vision.in.tum.de/rgbd/dataset/freiburg1/rgbd_dataset_freiburg1_xyz)
 
 - Download the bag files, for
-  example [Normal.bag](https://star-center.shanghaitech.edu.cn/seafile/d/0ea45d1878914077ade5/).
+  example [Normal](https://star-center.shanghaitech.edu.cn/seafile/d/0ea45d1878914077ade5/).
 - Decompress the bag, run `ros2 bag decompress Normal`.
 - Change the calibration params in `RealSense_D435i.yaml` if necessary.
 
@@ -186,6 +188,8 @@ ros2 service call /orb_slam3/save_map [file_name]
 - `enable_pangolin`: enable/disable ORB-SLAM3's Pangolin viewer and interface. (`true` by default)
 
 ### Services
+
+TODO Add save_map back
 
 - `ros2 service call /orb_slam3/save_map [file_name]`: save the map as `[file_name].osa` in `ROS_HOME` folder.
 - `ros2 service call /orb_slam3/save_traj [file_name]`: save the estimated trajectory of camera and keyframes

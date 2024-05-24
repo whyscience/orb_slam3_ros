@@ -8,6 +8,7 @@
 
 using namespace std;
 
+rclcpp::Clock::SharedPtr clock_;
 class ImuGrabber
 {
 public:
@@ -38,6 +39,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("orb_slam3");
     rclcpp::Logger logger = node->get_logger();
+    clock_ = node->get_clock();
     RCLCPP_INFO(logger, "orb_slam3 started");
 
     if (argc > 1)
@@ -54,12 +56,13 @@ int main(int argc, char **argv)
 
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", default_voc_file);
-    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/EuRoC.yaml");
+    node->declare_parameter<std::string>("settings_file",
+                                         std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/EuRoC.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
-    //debug code
+    // debug code
     imu_topic = "/imu0";
     image_topic = "/cam0/image_raw";
 
@@ -139,6 +142,7 @@ cv::Mat ImageGrabber::GetImage(const sensor_msgs::msg::Image::SharedPtr &img_msg
 
 void ImageGrabber::SyncWithImu()
 {
+    auto start_time = clock_->now();
     while (rclcpp::ok())
     {
         if (!img0Buf.empty() && !mpImuGb->imuBuf.empty())
@@ -184,6 +188,10 @@ void ImageGrabber::SyncWithImu()
                 }
             }
             mpImuGb->mBufMutex.unlock();
+
+            //auto dt = clock_->now() - start_time;
+            //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "dt = %f, HZ = %f, vImuMeas: %d", dt.seconds(), 1.0 / dt.seconds(), vImuMeas.size());
+            //start_time = clock_->now();
 
             // ORB-SLAM3 runs in TrackMonocular()
             /*Sophus::SE3f Tcw = */ pSLAM->TrackMonocular(im, tIm, vImuMeas);

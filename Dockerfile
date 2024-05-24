@@ -46,6 +46,7 @@ RUN add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        tmux zsh \
         libssl-dev \
         libudev-dev \
         libusb-1.0-0-dev \

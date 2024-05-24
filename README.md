@@ -203,6 +203,11 @@ To access a USB device (such as RealSense camera) inside docker container use:
 
 ``` bash
 docker run --network host --privileged -v /dev:/dev -it [image_name]
+
+xhost+
+docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 -v ~/Downloads:/root/Downloads/:rw -v /dev:/dev -v /tmp/.X11-unix:/tmp/.X11-unix:ro -e DISPLAY=:0 --name=orb_slam3_ros1 orb_slam3_ros1:latest bash
+
+
 ```
 
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container

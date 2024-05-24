@@ -68,3 +68,8 @@ bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request>, std::
 cv::Mat SE3f_to_cvMat(Sophus::SE3f);
 geometry_msgs::msg::Transform SE3f_to_tfTransform(Sophus::SE3f);
 sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*>, rclcpp::Time);
+
+inline double toSec(const std_msgs::msg::Header &header)
+{
+  return header.stamp.sec + header.stamp.nanosec * 1e-9;
+}

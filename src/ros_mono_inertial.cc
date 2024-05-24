@@ -47,6 +47,8 @@ int main(int argc, char **argv)
 
     std::string node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
+    std::string imu_topic = "/imu";
+    std::string image_topic = "/camera/image_raw";
 
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", "file_not_set");
@@ -54,6 +56,11 @@ int main(int argc, char **argv)
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
+
+    voc_file = "/home/eric/ws_orb_slam3_ros2/src/orb_slam3_ros/orb_slam3/Vocabulary/ORBvoc.txt.bin";
+    settings_file = "/home/eric/ws_orb_slam3_ros2/src/orb_slam3_ros/config/Monocular-Inertial/EuRoC.yaml";
+    imu_topic = "/imu0";
+    image_topic = "/cam0/image_raw";
 
     if (voc_file == "file_not_set" || settings_file == "file_not_set")
     {
@@ -79,9 +86,9 @@ int main(int argc, char **argv)
     ImageGrabber igb(&imugb);
 
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(
-            "/imu", 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
+            imu_topic, 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
     auto sub_img = node->create_subscription<sensor_msgs::msg::Image>(
-            "/camera/image_raw", 100, std::bind(&ImageGrabber::GrabImage, &igb, std::placeholders::_1));
+            image_topic, 100, std::bind(&ImageGrabber::GrabImage, &igb, std::placeholders::_1));
 
     // Assuming setup_publishers and setup_services are defined functions
     setup_publishers(node, image_transport, node_name);
@@ -143,8 +150,8 @@ void ImageGrabber::SyncWithImu()
             cv::Mat im;
             double tIm = 0;
 
-            tIm = img0Buf.front()->header.stamp.sec + img0Buf.front()->header.stamp.nanosec * 1e-9;
-            if (tIm > mpImuGb->imuBuf.back()->header.stamp.sec + mpImuGb->imuBuf.back()->header.stamp.nanosec * 1e-9)
+            tIm = toSec(img0Buf.front()->header);
+            if (tIm > toSec(mpImuGb->imuBuf.back()->header))
                 continue;
 
             this->mBufMutex.lock();
@@ -160,13 +167,9 @@ void ImageGrabber::SyncWithImu()
             {
                 // Load imu measurements from buffer
                 vImuMeas.clear();
-                while (!mpImuGb->imuBuf.empty() &&
-                       mpImuGb->imuBuf.front()->header.stamp.sec +
-                                       mpImuGb->imuBuf.front()->header.stamp.nanosec * 1e-9 <=
-                               tIm)
+                while (!mpImuGb->imuBuf.empty() && toSec(mpImuGb->imuBuf.front()->header) <= tIm)
                 {
-                    double t = mpImuGb->imuBuf.front()->header.stamp.sec +
-                               mpImuGb->imuBuf.front()->header.stamp.nanosec * 1e-9;
+                    double t = toSec(mpImuGb->imuBuf.front()->header);
 
                     cv::Point3f acc(mpImuGb->imuBuf.front()->linear_acceleration.x,
                                     mpImuGb->imuBuf.front()->linear_acceleration.y,

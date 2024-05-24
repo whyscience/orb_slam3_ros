@@ -36,7 +36,7 @@ public:
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("Mono_Inertial");
+    auto node = rclcpp::Node::make_shared("orb_slam3");
     rclcpp::Logger logger = node->get_logger();
     RCLCPP_INFO(logger, "Node started");
 
@@ -79,8 +79,8 @@ int main(int argc, char **argv)
     node->get_parameter("enable_pangolin", enable_pangolin);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System::eSensor sensor_type = ORB_SLAM3::System::IMU_MONOCULAR;
-    ORB_SLAM3::System *pSLAM = new ORB_SLAM3::System(voc_file, settings_file, sensor_type, enable_pangolin);
+    sensor_type = ORB_SLAM3::System::IMU_MONOCULAR;
+    pSLAM = new ORB_SLAM3::System(voc_file, settings_file, sensor_type, enable_pangolin);
 
     ImuGrabber imugb;
     ImageGrabber igb(&imugb);
@@ -93,6 +93,7 @@ int main(int argc, char **argv)
     // Assuming setup_publishers and setup_services are defined functions
     setup_publishers(node, image_transport, node_name);
     setup_services(node, node_name);
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     std::thread sync_thread(&ImageGrabber::SyncWithImu, &igb);
 
@@ -110,10 +111,11 @@ int main(int argc, char **argv)
 
 void ImageGrabber::GrabImage(const sensor_msgs::msg::Image::SharedPtr img_msg)
 {
-    std::lock_guard<std::mutex> lock(mBufMutex);
+    mBufMutex.lock();
     if (!img0Buf.empty())
         img0Buf.pop();
     img0Buf.push(img_msg);
+    mBufMutex.unlock();
 }
 
 cv::Mat ImageGrabber::GetImage(const sensor_msgs::msg::Image::SharedPtr &img_msg)
@@ -127,7 +129,7 @@ cv::Mat ImageGrabber::GetImage(const sensor_msgs::msg::Image::SharedPtr &img_msg
     catch (cv_bridge::Exception &e)
     {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "cv_bridge exception: %s", e.what());
-        return cv::Mat();
+        return {};
     }
 
     if (cv_ptr->image.type() == 0)
@@ -150,8 +152,8 @@ void ImageGrabber::SyncWithImu()
             cv::Mat im;
             double tIm = 0;
 
-            tIm = toSec(img0Buf.front()->header);
-            if (tIm > toSec(mpImuGb->imuBuf.back()->header))
+            tIm = toSec(img0Buf.front()->header.stamp);
+            if (tIm > toSec(mpImuGb->imuBuf.back()->header.stamp))
                 continue;
 
             this->mBufMutex.lock();
@@ -167,9 +169,9 @@ void ImageGrabber::SyncWithImu()
             {
                 // Load imu measurements from buffer
                 vImuMeas.clear();
-                while (!mpImuGb->imuBuf.empty() && toSec(mpImuGb->imuBuf.front()->header) <= tIm)
+                while (!mpImuGb->imuBuf.empty() && toSec(mpImuGb->imuBuf.front()->header.stamp) <= tIm)
                 {
-                    double t = toSec(mpImuGb->imuBuf.front()->header);
+                    double t = toSec(mpImuGb->imuBuf.front()->header.stamp);
 
                     cv::Point3f acc(mpImuGb->imuBuf.front()->linear_acceleration.x,
                                     mpImuGb->imuBuf.front()->linear_acceleration.y,
@@ -190,7 +192,7 @@ void ImageGrabber::SyncWithImu()
             mpImuGb->mBufMutex.unlock();
 
             // ORB-SLAM3 runs in TrackMonocular()
-            Sophus::SE3f Tcw = pSLAM->TrackMonocular(im, tIm, vImuMeas);
+            /*Sophus::SE3f Tcw = */pSLAM->TrackMonocular(im, tIm, vImuMeas);
 
             publish_topics(msg_time, Wbb);
         }
@@ -201,6 +203,7 @@ void ImageGrabber::SyncWithImu()
 
 void ImuGrabber::GrabImu(const sensor_msgs::msg::Imu::SharedPtr imu_msg)
 {
-    std::lock_guard<std::mutex> lock(mBufMutex);
+    mBufMutex.lock();
     imuBuf.push(imu_msg);
+    mBufMutex.unlock();
 }

@@ -47,29 +47,29 @@ extern rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr tracked_mappo
 extern rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr all_mappoints_pub;
 extern image_transport::Publisher tracking_img_pub;
 
-void setup_services(rclcpp::Node::SharedPtr, std::string);
-void setup_publishers(rclcpp::Node::SharedPtr, image_transport::ImageTransport&, std::string);
-void publish_topics(rclcpp::Time, Eigen::Vector3f = Eigen::Vector3f::Zero());
+void setup_services(rclcpp::Node::SharedPtr, const std::string&);
+void setup_publishers(const rclcpp::Node::SharedPtr&, image_transport::ImageTransport&, const std::string&);
+void publish_topics(const rclcpp::Time&, const Eigen::Vector3f& = Eigen::Vector3f::Zero());
 
-void publish_camera_pose(Sophus::SE3f, rclcpp::Time);
-void publish_tracking_img(cv::Mat, rclcpp::Time);
-void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint*>, rclcpp::Time);
-void publish_keypoints(std::vector<ORB_SLAM3::MapPoint*>, std::vector<cv::KeyPoint>, rclcpp::Time);
-sensor_msgs::msg::PointCloud2 keypoints_to_pointcloud(std::vector<cv::KeyPoint>&, rclcpp::Time);
+void publish_camera_pose(Sophus::SE3f, const rclcpp::Time&);
+void publish_tracking_img(const cv::Mat&, const rclcpp::Time&);
+void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint*>, const rclcpp::Time&);
+void publish_keypoints(std::vector<ORB_SLAM3::MapPoint*>, std::vector<cv::KeyPoint>, const rclcpp::Time&);
+sensor_msgs::msg::PointCloud2 keypoints_to_pointcloud(std::vector<cv::KeyPoint>&, const rclcpp::Time&);
 
-void publish_all_points(std::vector<ORB_SLAM3::MapPoint*>, rclcpp::Time);
-void publish_tf_transform(Sophus::SE3f, std::string, std::string, rclcpp::Time);
-void publish_body_odom(Sophus::SE3f, Eigen::Vector3f, Eigen::Vector3f, rclcpp::Time);
-void publish_kf_markers(std::vector<Sophus::SE3f>, rclcpp::Time);
+void publish_all_points(std::vector<ORB_SLAM3::MapPoint*>, const rclcpp::Time&);
+void publish_tf_transform(Sophus::SE3f, std::string, std::string, const rclcpp::Time&);
+void publish_body_odom(Sophus::SE3f, Eigen::Vector3f, Eigen::Vector3f, const rclcpp::Time&);
+void publish_kf_markers(std::vector<Sophus::SE3f>, const rclcpp::Time&);
 
 bool save_map_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request>, std::shared_ptr<std_srvs::srv::SetBool::Response>);
 bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request>, std::shared_ptr<std_srvs::srv::SetBool::Response>);
 
-cv::Mat SE3f_to_cvMat(Sophus::SE3f);
+cv::Mat SE3f_to_cvMat(const Sophus::SE3f&);
 geometry_msgs::msg::Transform SE3f_to_tfTransform(Sophus::SE3f);
-sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*>, rclcpp::Time);
+sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*>, const rclcpp::Time&);
 
-inline double toSec(const std_msgs::msg::Header &header)
+inline double toSec(const rclcpp::Time &time)
 {
-  return header.stamp.sec + header.stamp.nanosec * 1e-9;
+  return time.seconds() + time.nanoseconds() * 1e-9;
 }

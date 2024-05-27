@@ -13,6 +13,7 @@ RUN apt-get update && \
         git \
         build-essential \
         cmake \
+        tmux zsh \
         libeigen3-dev \
         ros-${ROS_DISTRO}-hector-trajectory-server \
         python3-catkin-tools \

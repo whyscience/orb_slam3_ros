@@ -151,6 +151,7 @@ void ImageGrabber::SyncWithImu()
             double tIm = 0;
 
             tIm = toSec(img0Buf.front()->header.stamp);
+            //cout << "stamp = " << tIm << ", stamp.sec = "<< img0Buf.front()->header.stamp.sec << ", nanosec = "<< img0Buf.front()->header.stamp.nanosec <<endl;
             if (tIm > toSec(mpImuGb->imuBuf.back()->header.stamp))
                 continue;
 

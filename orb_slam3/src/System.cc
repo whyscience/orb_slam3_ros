@@ -36,7 +36,7 @@
 namespace ORB_SLAM3
 {
 
-Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
+Verbose::eLevel Verbose::th = Verbose::VERBOSITY_DEBUG;
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer, const int initFr, const string &strSequence):
@@ -106,7 +106,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
 
     mStrVocabularyFilePath = strVocFile;
-    
+
     //Load ORB Vocabulary
     cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
@@ -1330,12 +1330,12 @@ cv::Mat System::GetCurrentFrame () {
     return mpFrameDrawer->DrawFrame();
 }
 
-Sophus::SE3f System::GetCamTwc() 
+Sophus::SE3f System::GetCamTwc()
 {
     return mpTracker->GetCamTwc();
 }
 
-Sophus::SE3f System::GetImuTwb() 
+Sophus::SE3f System::GetImuTwb()
 {
     return mpTracker->GetImuTwb();
 }
@@ -1584,7 +1584,7 @@ vector<Sophus::SE3f> System::GetAllKeyframePoses()
     sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
 
     vector<Sophus::SE3f> vKFposes;
-    
+
     for(size_t i = 0; i < vpKFs.size(); i++)
     {
         KeyFrame* pKF = vpKFs[i];

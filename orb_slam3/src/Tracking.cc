@@ -1757,7 +1757,11 @@ void Tracking::PreintegrateIMU()
             cout << "mpImuPreintegratedFromLastKF does not exist" << endl;
         mpImuPreintegratedFromLastKF->IntegrateNewMeasurement(acc,angVel,tstep);
         pImuPreintegratedFromLastFrame->IntegrateNewMeasurement(acc,angVel,tstep);
+        //print acc,angVel,tstep
+        //cout << "acc: " << acc.transpose() << " angVel: " << angVel.transpose() << " tstep: " << tstep << endl;
     }
+
+    //pImuPreintegratedFromLastFrame->printMeasurements();
 
     mCurrentFrame.mpImuPreintegratedFrame = pImuPreintegratedFromLastFrame;
     mCurrentFrame.mpImuPreintegrated = mpImuPreintegratedFromLastKF;

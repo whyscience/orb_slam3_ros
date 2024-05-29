@@ -223,9 +223,11 @@ docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
     -v "$FOLDER:/data" kalibr
 
 source devel/setup.bash
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models omni-none --topics /camera/live_view_back
 
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu imu.yaml  --imu-models calibrated  --cam cam_april-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
+# rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
+
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
 ```
 
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container

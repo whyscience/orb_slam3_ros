@@ -210,6 +210,24 @@ docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 
 
 ```
 
+
+```bash
+# https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr
+pip3 install rosbags>=0.9.12 # might need -U
+rosbags-convert --src <ros2_bag_folder> --dst calib_01.bag --exclude-topic <non_img_and_imu_topics>
+
+FOLDER=$(pwd)
+xhost +local:root
+docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
+    -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+    -v "$FOLDER:/data" kalibr
+
+source devel/setup.bash
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
+
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu imu.yaml  --imu-models calibrated  --cam cam_april-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
+```
+
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container
 
 ## To-do:

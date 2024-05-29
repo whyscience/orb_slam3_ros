@@ -87,7 +87,6 @@ void Map::SetImuInitialized()
 {
     unique_lock<mutex> lock(mMutexMap);
     mbImuInitialized = true;
-    cout << "IMU initialized" << endl;
 }
 
 bool Map::isImuInitialized()

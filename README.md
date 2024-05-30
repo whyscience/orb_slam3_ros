@@ -222,8 +222,10 @@ docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     -v "$FOLDER:/data" kalibr
 
+# Try ['pinhole-radtan', 'pinhole-equi', 'pinhole-fov', 'omni-none', 'omni-radtan', 'eucm-none', 'ds-none'].
+# use omni-radtan for KannalaBrandt8
 source devel/setup.bash
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models omni-none --topics /camera/live_view_back
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
 
 # rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
 

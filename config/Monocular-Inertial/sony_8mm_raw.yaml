@@ -12,15 +12,15 @@ Camera.type: "PinHole"
 
 
 # Camera calibration and distortion parameters (OpenCV)
-Camera.fx: 436.092195
-Camera.fy: 436.777001
-Camera.cx: 528.975600
-Camera.cy: 290.906282
+Camera1.fx: 436.092195
+Camera1.fy: 436.777001
+Camera1.cx: 528.975600
+Camera1.cy: 290.906282
 
-Camera.k1: -0.240058
-Camera.k2: 0.044193
-Camera.p1: 0.005581
-Camera.p2: 0.001901
+Camera1.k1: -0.240058
+Camera1.k2: 0.044193
+Camera1.p1: 0.005581
+Camera1.p2: 0.001901
 
 Camera.width: 1024
 Camera.height: 680
@@ -33,6 +33,23 @@ Camera.RGB: 1
 
 # Image scale, it changes the image size to be processed (<1.0: reduce, >1.0: increase)
 Camera.imageScale: 1.0
+
+# Transformation from camera to body-frame (imu)
+IMU.T_b_c1: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [0.0, 0.0, 1.0, 0.0,
+         -1.0, 0.0, 0.0, 0.0,
+         0.0, -1.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 1.0]
+
+# IMU noise
+IMU.NoiseGyro: 1.7e-4 #1.6968e-04
+IMU.NoiseAcc: 2.0000e-3 #2.0e-3
+IMU.GyroWalk: 1.9393e-05
+IMU.AccWalk: 3.0000e-03 # 3e-03
+IMU.Frequency: 200.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters

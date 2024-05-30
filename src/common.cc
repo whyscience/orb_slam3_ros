@@ -43,7 +43,7 @@ std::string getTimeStamp()
 bool save_map_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
                   std::shared_ptr<std_srvs::srv::SetBool::Response> res)
 {
-    auto time_str = getTimeStamp() + "_map";
+    auto time_str = "map_" + getTimeStamp();
     res->success = pSLAM->SaveMap(time_str /*req->name*/);
 
     if (res->success)
@@ -58,8 +58,8 @@ bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
                    std::shared_ptr<std_srvs::srv::SetBool::Response> res)
 {
     auto time_str = getTimeStamp();
-    const std::string cam_traj_file = /*req->name*/ time_str + "_cam_traj.txt";
-    const std::string kf_traj_file = /*req->name*/ time_str + "_kf_traj.txt";
+    const std::string cam_traj_file = /*req->name*/ "cam_traj_" + time_str + ".txt";
+    const std::string kf_traj_file = /*req->name*/ "kf_traj_" + time_str + ".txt";
 
     try
     {
@@ -84,7 +84,7 @@ bool save_traj_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
     return res->success;
 }
 
-void setup_services(const rclcpp::Node::SharedPtr& node, const std::string &node_name)
+void setup_services(const rclcpp::Node::SharedPtr &node, const std::string &node_name)
 {
     static auto save_map_service = node->create_service<std_srvs::srv::SetBool>(node_name + "/save_map", save_map_srv);
     static auto save_traj_service =
@@ -357,7 +357,7 @@ sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapP
 
     if (map_points.size() == 0)
     {
-        std::cout << "Map point vector is empty!" << std::endl;
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Map point vector is empty!");
     }
 
     sensor_msgs::msg::PointCloud2 cloud;

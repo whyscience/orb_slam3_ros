@@ -29,12 +29,22 @@ namespace ORB_SLAM3
 
     long unsigned int GeometricCamera::nNextId = 0;
 
+    /**
+     * @brief 相机坐标系下的三维点投影到无畸变像素平面
+     * @param p3D 三维点
+     * @return 像素坐标
+     */
     cv::Point2f Pinhole::project(const cv::Point3f &p3D)
     {
         return cv::Point2f(mvParameters[0] * p3D.x / p3D.z + mvParameters[2],
                            mvParameters[1] * p3D.y / p3D.z + mvParameters[3]);
     }
 
+    /**
+     * @brief 相机坐标系下的三维点投影到无畸变像素平面
+     * @param v3D 三维点
+     * @return 像素坐标
+     */
     Eigen::Vector2d Pinhole::project(const Eigen::Vector3d &v3D)
     {
         Eigen::Vector2d res;
@@ -44,6 +54,11 @@ namespace ORB_SLAM3
         return res;
     }
 
+    /**
+     * @brief 相机坐标系下的三维点投影到无畸变像素平面
+     * @param v3D 三维点
+     * @return 像素坐标
+     */
     Eigen::Vector2f Pinhole::project(const Eigen::Vector3f &v3D)
     {
         Eigen::Vector2f res;
@@ -53,26 +68,49 @@ namespace ORB_SLAM3
         return res;
     }
 
+    /**
+     * @brief 相机坐标系下的三维点投影到无畸变像素平面
+     * @param p3D 三维点
+     * @return 像素坐标
+     */
     Eigen::Vector2f Pinhole::projectMat(const cv::Point3f &p3D)
     {
         cv::Point2f point = this->project(p3D);
         return Eigen::Vector2f(point.x, point.y);
     }
 
+    /**
+     * @brief 貌似是调试遗留的产物
+     */
     float Pinhole::uncertainty2(const Eigen::Matrix<double, 2, 1> &p2D) { return 1.0; }
 
+    /**
+     * @brief 反投影
+     * @param p2D 特征点
+     * @return 归一化坐标
+     */
     Eigen::Vector3f Pinhole::unprojectEig(const cv::Point2f &p2D)
     {
         return Eigen::Vector3f((p2D.x - mvParameters[2]) / mvParameters[0], (p2D.y - mvParameters[3]) / mvParameters[1],
                                1.f);
     }
 
+    /**
+     * @brief 反投影
+     * @param p2D 特征点
+     * @return 归一化坐标
+     */
     cv::Point3f Pinhole::unproject(const cv::Point2f &p2D)
     {
         return cv::Point3f((p2D.x - mvParameters[2]) / mvParameters[0], (p2D.y - mvParameters[3]) / mvParameters[1],
                            1.f);
     }
 
+    /**
+     * @brief 求解二维像素坐标关于三维点坐标的雅克比矩阵
+     * @param v3D 三维点
+     * @return
+     */
     Eigen::Matrix<double, 2, 3> Pinhole::projectJac(const Eigen::Vector3d &v3D)
     {
         Eigen::Matrix<double, 2, 3> Jac;
@@ -86,6 +124,15 @@ namespace ORB_SLAM3
         return Jac;
     }
 
+    /** 三角化恢复三维点  单目初始化时使用
+     * @param vKeys1 第一帧的关键点
+     * @param vKeys2 第二帧的关键点
+     * @param vMatches12 匹配关系，长度与vKeys1一样，对应位置存放vKeys2中关键点的下标
+     * @param R21 顾名思义
+     * @param t21 顾名思义
+     * @param vP3D 恢复出的三维点
+     * @param vbTriangulated 是否三角化成功，用于统计匹配点数量
+     */
     bool Pinhole::ReconstructWithTwoViews(const std::vector<cv::KeyPoint> &vKeys1,
                                           const std::vector<cv::KeyPoint> &vKeys2, const std::vector<int> &vMatches12,
                                           Sophus::SE3f &T21, std::vector<cv::Point3f> &vP3D,
@@ -100,7 +147,10 @@ namespace ORB_SLAM3
         return tvr->Reconstruct(vKeys1, vKeys2, vMatches12, T21, vP3D, vbTriangulated);
     }
 
-
+    /**
+     * @brief 返回内参矩阵
+     * @return K
+     */
     cv::Mat Pinhole::toK()
     {
         cv::Mat K = (cv::Mat_<float>(3, 3) << mvParameters[0], 0.f, mvParameters[2], 0.f, mvParameters[1],
@@ -108,6 +158,10 @@ namespace ORB_SLAM3
         return K;
     }
 
+    /**
+     * @brief 返回内参矩阵
+     * @return K
+     */
     Eigen::Matrix3f Pinhole::toK_()
     {
         Eigen::Matrix3f K;
@@ -115,7 +169,17 @@ namespace ORB_SLAM3
         return K;
     }
 
-
+    /**
+     * @brief 极线约束
+     * @param pCamera2 右相机
+     * @param kp1 左相机特征点
+     * @param kp2 右相机特征点
+     * @param R12 2->1的旋转
+     * @param t12 2->1的平移
+     * @param sigmaLevel 特征点1的尺度的平方
+     * @param unc 特征点2的尺度的平方，1.2^2n
+     * @return 三维点恢复的成功与否
+     */
     bool Pinhole::epipolarConstrain(GeometricCamera *pCamera2, const cv::KeyPoint &kp1, const cv::KeyPoint &kp2,
                                     const Eigen::Matrix3f &R12, const Eigen::Vector3f &t12, const float sigmaLevel,
                                     const float unc)
@@ -127,10 +191,15 @@ namespace ORB_SLAM3
         Eigen::Matrix3f F12 = K1.transpose().inverse() * t12x * R12 * K2.inverse();
 
         // Epipolar line in second image l = x1'F12 = [a b c]
+        //                      u2,
+        // (u1, v1, 1) * F12 * (v2,) = 0   -->  (a, b, c) * (u2, v2, 1)^t = 0 --> a*u2 + b*v2 + c = 0
+        //                       1
         const float a = kp1.pt.x * F12(0, 0) + kp1.pt.y * F12(1, 0) + F12(2, 0);
         const float b = kp1.pt.x * F12(0, 1) + kp1.pt.y * F12(1, 1) + F12(2, 1);
         const float c = kp1.pt.x * F12(0, 2) + kp1.pt.y * F12(1, 2) + F12(2, 2);
 
+        // 点到直线距离的公式
+        // d = |a*u2 + b*v2 + c| / sqrt(a^2 + b^2)
         const float num = a * kp2.pt.x + b * kp2.pt.y + c;
 
         const float den = a * a + b * b;
@@ -148,7 +217,6 @@ namespace ORB_SLAM3
         os << ph.mvParameters[0] << " " << ph.mvParameters[1] << " " << ph.mvParameters[2] << " " << ph.mvParameters[3];
         return os;
     }
-
     std::istream &operator>>(std::istream &is, Pinhole &ph)
     {
         float nextParam;

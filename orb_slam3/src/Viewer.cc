@@ -323,9 +323,6 @@ namespace ORB_SLAM3
             if (menuShowPoints)
                 mpMapDrawer->DrawMapPoints();
 
-            // Draw world frame
-            pangolin::glDrawAxis(10.0);
-
             pangolin::FinishFrame();
 
             cv::Mat toShow;
@@ -457,8 +454,8 @@ namespace ORB_SLAM3
     }
 
     /*void Viewer::SetTrackingPause()
-    {
-        mbStopTrack = true;
-    }*/
+{
+    mbStopTrack = true;
+}*/
 
 } // namespace ORB_SLAM3

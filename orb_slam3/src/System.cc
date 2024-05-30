@@ -38,6 +38,15 @@ namespace ORB_SLAM3
 
     Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
 
+    /**
+     * @brief 系统的构造函数，将会启动其他的线程
+     * @param strVocFile 词袋文件所在路径
+     * @param strSettingsFile 配置文件所在路径
+     * @param sensor 传感器类型
+     * @param bUseViewer 是否使用可视化界面
+     * @param initFr initFr表示初始化帧的id,开始设置为0
+     * @param strSequence 序列名,在跟踪线程和局部建图线程用得到
+     */
     System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer,
                    const int initFr, const string &strSequence) :
         mSensor(sensor), mpViewer(static_cast<Viewer *>(NULL)), mbReset(false), mbResetActiveMap(false),
@@ -59,31 +68,35 @@ namespace ORB_SLAM3
         cout << "Input sensor was set to: ";
 
         if (mSensor == MONOCULAR)
-            cout << "Monocular" << endl;
+            cout << "Monocular" << endl; // 单目
         else if (mSensor == STEREO)
-            cout << "Stereo" << endl;
+            cout << "Stereo" << endl; // 双目
         else if (mSensor == RGBD)
-            cout << "RGB-D" << endl;
+            cout << "RGB-D" << endl; // RGBD相机
         else if (mSensor == IMU_MONOCULAR)
-            cout << "Monocular-Inertial" << endl;
+            cout << "Monocular-Inertial" << endl; // 单目 + imu
         else if (mSensor == IMU_STEREO)
-            cout << "Stereo-Inertial" << endl;
+            cout << "Stereo-Inertial" << endl; // 双目 + imu
         else if (mSensor == IMU_RGBD)
-            cout << "RGB-D-Inertial" << endl;
+            cout << "RGB-D-Inertial" << endl; // RGBD相机 + imu
 
         // Check settings file
+        //  Step 2 读取配置文件
         cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
+        // 如果打开失败，就输出错误信息
         if (!fsSettings.isOpened())
         {
             cerr << "Failed to open settings file at: " << strSettingsFile << endl;
             exit(-1);
         }
 
+        // 查看配置文件版本，不同版本有不同处理方法
         cv::FileNode node = fsSettings["File.version"];
         if (!node.empty() && node.isString() && node.string() == "1.0")
         {
             settings_ = new Settings(strSettingsFile, mSensor);
 
+            // 保存及加载地图的名字
             mStrLoadAtlasFromFile = settings_->atlasLoadFile();
             mStrSaveAtlasToFile = settings_->atlasSaveFile();
 
@@ -105,6 +118,7 @@ namespace ORB_SLAM3
             }
         }
 
+        // 是否激活回环，默认是开着的
         node = fsSettings["loopClosing"];
         bool activeLC = true;
         if (!node.empty())
@@ -114,31 +128,56 @@ namespace ORB_SLAM3
 
         mStrVocabularyFilePath = strVocFile;
 
-        // Load ORB Vocabulary
-        cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
-
-        mpVocabulary = new ORBVocabulary();
-        bool bVocLoad = mpVocabulary->loadFromBinFile(strVocFile);
-        if (!bVocLoad)
-        {
-            cerr << "Wrong path to vocabulary. " << endl;
-            cerr << "Failed to open at: " << strVocFile << endl;
-            exit(-1);
-        }
-        cout << "Vocabulary loaded!" << endl << endl;
-
-        // Create KeyFrame Database
-        mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
-
+        // ORBSLAM3新加的多地图管理功能，这里加载Atlas标识符
         bool loadedAtlas = false;
+
         if (mStrLoadAtlasFromFile.empty())
         {
+            // Load ORB Vocabulary
+            cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
+
+            // 建立一个新的ORB字典
+            mpVocabulary = new ORBVocabulary();
+            // 读取预训练好的ORB字典并返回成功/失败标志
+            bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+            // 如果加载失败，就输出错误信息
+            if (!bVocLoad)
+            {
+                cerr << "Wrong path to vocabulary. " << endl;
+                cerr << "Falied to open at: " << strVocFile << endl;
+                exit(-1);
+            }
+            cout << "Vocabulary loaded!" << endl << endl;
+
+            // Create KeyFrame Database
+            //  Step 4 创建关键帧数据库
+            mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+
             // Create the Atlas
+            //  Step 5 创建多地图，参数0表示初始化关键帧id为0
             cout << "Initialization of Atlas from scratch " << endl;
             mpAtlas = new Atlas(0);
         }
         else
         {
+            // Load ORB Vocabulary
+            cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
+
+            mpVocabulary = new ORBVocabulary();
+            bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+            if (!bVocLoad)
+            {
+                cerr << "Wrong path to vocabulary. " << endl;
+                cerr << "Falied to open at: " << strVocFile << endl;
+                exit(-1);
+            }
+            cout << "Vocabulary loaded!" << endl << endl;
+
+            // Create KeyFrame Database
+            mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+
+            cout << "Load File" << endl;
+
             // Load the file with an earlier session
             // clock_t start = clock();
             cout << "Initialization of Atlas from file: " << mStrLoadAtlasFromFile << endl;
@@ -166,30 +205,37 @@ namespace ORB_SLAM3
             // usleep(10*1000*1000);
         }
 
-
+        // 如果是有imu的传感器类型，设置mbIsInertial = true;以后的跟踪和预积分将和这个标志有关
         if (mSensor == IMU_STEREO || mSensor == IMU_MONOCULAR || mSensor == IMU_RGBD)
             mpAtlas->SetInertialSensor();
 
+        // Step 6 依次创建跟踪、局部建图、闭环、显示线程
         // Create Drawers. These are used by the Viewer
+        // 创建用于显示帧和地图的类，由Viewer调用
         mpFrameDrawer = new FrameDrawer(mpAtlas);
         mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
 
         // Initialize the Tracking thread
         //(it will live in the main thread of execution, the one that called this constructor)
+        //  创建跟踪线程（主线程）,不会立刻开启,会在对图像和imu预处理后在main主线程种执行
         cout << "Seq. Name: " << strSequence << endl;
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer, mpAtlas, mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_, strSequence);
 
         // Initialize the Local Mapping thread and launch
+        // 创建并开启local mapping线程
         mpLocalMapper =
                 new LocalMapping(this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
                                  mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor == IMU_RGBD, strSequence);
         mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run, mpLocalMapper);
         mpLocalMapper->mInitFr = initFr;
+
+        // 设置最远3D地图点的深度值，如果超过阈值，说明可能三角化不太准确，丢弃
         if (settings_)
             mpLocalMapper->mThFarPoints = settings_->thFarPoints();
         else
             mpLocalMapper->mThFarPoints = fsSettings["thFarPoints"];
+        // ? 这里有个疑问,C++中浮点型跟0比较是否用精确?
         if (mpLocalMapper->mThFarPoints != 0)
         {
             cout << "Discard points further than " << mpLocalMapper->mThFarPoints << " m from current camera" << endl;
@@ -200,11 +246,13 @@ namespace ORB_SLAM3
 
         // Initialize the Loop Closing thread and launch
         //  mSensor!=MONOCULAR && mSensor!=IMU_MONOCULAR
+        //  创建并开启闭环线程
         mpLoopCloser = new LoopClosing(mpAtlas, mpKeyFrameDatabase, mpVocabulary, mSensor != MONOCULAR,
                                        activeLC); // mSensor!=MONOCULAR);
         mptLoopClosing = new thread(&ORB_SLAM3::LoopClosing::Run, mpLoopCloser);
 
         // Set pointers between threads
+        //  设置线程间的指针
         mpTracker->SetLocalMapper(mpLocalMapper);
         mpTracker->SetLoopClosing(mpLoopCloser);
 
@@ -217,7 +265,9 @@ namespace ORB_SLAM3
         // usleep(10*1000*1000);
 
         // Initialize the Viewer thread and launch
+        //  创建并开启显示线程
         if (bUseViewer)
+        // if(false) // TODO
         {
             mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker, strSettingsFile, settings_);
             mptViewer = new thread(&Viewer::Run, mpViewer);
@@ -227,6 +277,7 @@ namespace ORB_SLAM3
         }
 
         // Fix verbosity
+        // 打印输出中间的信息，设置为安静模式
         Verbose::SetTh(Verbose::VERBOSITY_QUIET);
     }
 
@@ -314,7 +365,6 @@ namespace ORB_SLAM3
         mTrackingState = mpTracker->mState;
         mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
         mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-        mTrackedKeyPoints = mpTracker->mCurrentFrame.mvKeys;
 
         return Tcw;
     }
@@ -389,11 +439,18 @@ namespace ORB_SLAM3
         mTrackingState = mpTracker->mState;
         mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
         mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-        mTrackedKeyPoints = mpTracker->mCurrentFrame.mvKeys;
-
         return Tcw;
     }
 
+    /**
+     * @brief 单目/单目VIO跟踪
+     *
+     * @param[in] im                灰度图像
+     * @param[in] timestamp         图像时间戳
+     * @param[in] vImuMeas          上一帧到当前帧图像之间的IMU测量值
+     * @param[in] filename          调试用的文件名
+     * @return Sophus::SE3f         当前帧位姿Tcw
+     */
     Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, const vector<IMU::Point> &vImuMeas,
                                         string filename)
     {
@@ -403,7 +460,7 @@ namespace ORB_SLAM3
             if (mbShutDown)
                 return Sophus::SE3f();
         }
-
+        // 确保是单目或单目VIO模式
         if (mSensor != MONOCULAR && mSensor != IMU_MONOCULAR)
         {
             cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular nor Monocular-Inertial."
@@ -421,7 +478,9 @@ namespace ORB_SLAM3
 
         // Check mode change
         {
+            // 独占锁，主要是为了mbActivateLocalizationMode和mbDeactivateLocalizationMode不会发生混乱
             unique_lock<mutex> lock(mMutexMode);
+            // mbActivateLocalizationMode为true会关闭局部地图线程，仅跟踪模式
             if (mbActivateLocalizationMode)
             {
                 mpLocalMapper->RequestStop();
@@ -431,8 +490,9 @@ namespace ORB_SLAM3
                 {
                     usleep(1000);
                 }
-
+                // 局部地图关闭以后，只进行追踪的线程，只计算相机的位姿，没有对局部地图进行更新
                 mpTracker->InformOnlyTracking(true);
+                // 关闭线程可以使得别的线程得到更多的资源
                 mbActivateLocalizationMode = false;
             }
             if (mbDeactivateLocalizationMode)
@@ -452,6 +512,7 @@ namespace ORB_SLAM3
                 mbReset = false;
                 mbResetActiveMap = false;
             }
+            // 如果检测到重置活动地图的标志为true,将重置地图
             else if (mbResetActiveMap)
             {
                 cout << "SYSTEM-> Reseting active map in monocular case" << endl;
@@ -459,18 +520,19 @@ namespace ORB_SLAM3
                 mbResetActiveMap = false;
             }
         }
-
+        // 如果是单目VIO模式，把IMU数据存储到队列mlQueueImuData
         if (mSensor == System::IMU_MONOCULAR)
             for (size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
                 mpTracker->GrabImuData(vImuMeas[i_imu]);
 
+        // 计算相机位姿
         Sophus::SE3f Tcw = mpTracker->GrabImageMonocular(imToFeed, timestamp, filename);
 
+        // 更新跟踪状态和参数
         unique_lock<mutex> lock2(mMutexState);
         mTrackingState = mpTracker->mState;
         mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
         mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-        mTrackedKeyPoints = mpTracker->mCurrentFrame.mvKeys;
 
         return Tcw;
     }
@@ -522,38 +584,48 @@ namespace ORB_SLAM3
 
         cout << "Shutdown" << endl;
 
+        if (mpViewer)
+        {
+            mpViewer->RequestFinish();
+            while (!mpViewer->isFinished())
+                usleep(5000);
+        }
+
         mpLocalMapper->RequestFinish();
         mpLoopCloser->RequestFinish();
         /*if(mpViewer)
-        {
-            mpViewer->RequestFinish();
-            while(!mpViewer->isFinished())
-                usleep(5000);
-        }*/
+    {
+        mpViewer->RequestFinish();
+        while(!mpViewer->isFinished())
+            usleep(5000);
+    }*/
 
         // Wait until all thread have effectively stopped
-        /*while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
+        // 源代码这里注释掉了，但是不执行会有锁报错
+        while (!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
         {
-            if(!mpLocalMapper->isFinished())
-                cout << "mpLocalMapper is not finished" << endl;*/
-        /*if(!mpLoopCloser->isFinished())
-            cout << "mpLoopCloser is not finished" << endl;
-        if(mpLoopCloser->isRunningGBA()){
-            cout << "mpLoopCloser is running GBA" << endl;
-            cout << "break anyway..." << endl;
-            break;
-        }*/
-        /*usleep(5000);
-    }*/
+            // if(!mpLocalMapper->isFinished())
+            //     cout << "mpLocalMapper is not finished" << endl;
+            // if(!mpLoopCloser->isFinished())
+            //     cout << "mpLoopCloser is not finished" << endl;
+            // if(mpLoopCloser->isRunningGBA()){
+            //     cout << "mpLoopCloser is running GBA" << endl;
+            //     cout << "break anyway..." << endl;
+            //     break;
+            // }
+            usleep(5000);
+        }
+
 
         if (!mStrSaveAtlasToFile.empty())
         {
+            std::cout << "开始保存地图" << std::endl;
             Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile, Verbose::VERBOSITY_NORMAL);
             SaveAtlas(FileType::BINARY_FILE);
         }
 
         /*if(mpViewer)
-            pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
+        pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
 
 #ifdef REGISTER_TIMES
         mpTracker->PrintTimeStats();
@@ -665,10 +737,10 @@ namespace ORB_SLAM3
 
         cout << endl << "Saving trajectory to " << filename << " ..." << endl;
         /*if(mSensor==MONOCULAR)
-        {
-            cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
-            return;
-        }*/
+    {
+        cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
+        return;
+    }*/
 
         vector<Map *> vpMaps = mpAtlas->GetAllMaps();
         int numMaxKFs = 0;
@@ -785,10 +857,10 @@ namespace ORB_SLAM3
 
         cout << endl << "Saving trajectory of map " << pMap->GetId() << " to " << filename << " ..." << endl;
         /*if(mSensor==MONOCULAR)
-        {
-            cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
-            return;
-        }*/
+    {
+        cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
+        return;
+    }*/
 
         int numMaxKFs = 0;
 
@@ -888,181 +960,181 @@ namespace ORB_SLAM3
     }
 
     /*void System::SaveTrajectoryEuRoC(const string &filename)
+{
+
+    cout << endl << "Saving trajectory to " << filename << " ..." << endl;
+    if(mSensor==MONOCULAR)
     {
+        cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
+        return;
+    }
 
-        cout << endl << "Saving trajectory to " << filename << " ..." << endl;
-        if(mSensor==MONOCULAR)
+    vector<Map*> vpMaps = mpAtlas->GetAllMaps();
+    Map* pBiggerMap;
+    int numMaxKFs = 0;
+    for(Map* pMap :vpMaps)
+    {
+        if(pMap->GetAllKeyFrames().size() > numMaxKFs)
         {
-            cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." << endl;
-            return;
+            numMaxKFs = pMap->GetAllKeyFrames().size();
+            pBiggerMap = pMap;
+        }
+    }
+
+    vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    Sophus::SE3f Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
+    if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
+        Twb = vpKFs[0]->GetImuPose_();
+    else
+        Twb = vpKFs[0]->GetPoseInverse_();
+
+    ofstream f;
+    f.open(filename.c_str());
+    // cout << "file open" << endl;
+    f << fixed;
+
+    // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
+    // We need to get first the keyframe pose and then concatenate the relative transformation.
+    // Frames not localized (tracking failure) are not saved.
+
+    // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
+    // which is true when tracking failed (lbL).
+    list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
+    list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
+    list<bool>::iterator lbL = mpTracker->mlbLost.begin();
+
+    //cout << "size mlpReferences: " << mpTracker->mlpReferences.size() << endl;
+    //cout << "size mlRelativeFramePoses: " << mpTracker->mlRelativeFramePoses.size() << endl;
+    //cout << "size mpTracker->mlFrameTimes: " << mpTracker->mlFrameTimes.size() << endl;
+    //cout << "size mpTracker->mlbLost: " << mpTracker->mlbLost.size() << endl;
+
+
+    for(list<Sophus::SE3f>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
+        lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
+    {
+        //cout << "1" << endl;
+        if(*lbL)
+            continue;
+
+
+        KeyFrame* pKF = *lRit;
+        //cout << "KF: " << pKF->mnId << endl;
+
+        Sophus::SE3f Trw;
+
+        // If the reference keyframe was culled, traverse the spanning tree to get a suitable keyframe.
+        if (!pKF)
+            continue;
+
+        //cout << "2.5" << endl;
+
+        while(pKF->isBad())
+        {
+            //cout << " 2.bad" << endl;
+            Trw = Trw * pKF->mTcp;
+            pKF = pKF->GetParent();
+            //cout << "--Parent KF: " << pKF->mnId << endl;
         }
 
-        vector<Map*> vpMaps = mpAtlas->GetAllMaps();
-        Map* pBiggerMap;
-        int numMaxKFs = 0;
-        for(Map* pMap :vpMaps)
+        if(!pKF || pKF->GetMap() != pBiggerMap)
         {
-            if(pMap->GetAllKeyFrames().size() > numMaxKFs)
-            {
-                numMaxKFs = pMap->GetAllKeyFrames().size();
-                pBiggerMap = pMap;
-            }
+            //cout << "--Parent KF is from another map" << endl;
+            continue;
         }
 
-        vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-        sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+        //cout << "3" << endl;
 
-        // Transform all keyframes so that the first keyframe is at the origin.
-        // After a loop closure the first keyframe might not be at the origin.
-        Sophus::SE3f Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
-        if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
-            Twb = vpKFs[0]->GetImuPose_();
+        Trw = Trw * pKF->GetPose()*Twb; // Tcp*Tpw*Twb0=Tcb0 where b0 is the new world reference
+
+        // cout << "4" << endl;
+
+
+        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        {
+            Sophus::SE3f Tbw = pKF->mImuCalib.Tbc_ * (*lit) * Trw;
+            Sophus::SE3f Twb = Tbw.inverse();
+
+            Eigen::Vector3f twb = Twb.translation();
+            Eigen::Quaternionf q = Twb.unit_quaternion();
+            f << setprecision(6) << 1e9*(*lT) << " " <<  setprecision(9) << twb(0) << " " << twb(1) << " " << twb(2) <<
+" " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
+        }
         else
-            Twb = vpKFs[0]->GetPoseInverse_();
-
-        ofstream f;
-        f.open(filename.c_str());
-        // cout << "file open" << endl;
-        f << fixed;
-
-        // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
-        // We need to get first the keyframe pose and then concatenate the relative transformation.
-        // Frames not localized (tracking failure) are not saved.
-
-        // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
-        // which is true when tracking failed (lbL).
-        list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
-        list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
-        list<bool>::iterator lbL = mpTracker->mlbLost.begin();
-
-        //cout << "size mlpReferences: " << mpTracker->mlpReferences.size() << endl;
-        //cout << "size mlRelativeFramePoses: " << mpTracker->mlRelativeFramePoses.size() << endl;
-        //cout << "size mpTracker->mlFrameTimes: " << mpTracker->mlFrameTimes.size() << endl;
-        //cout << "size mpTracker->mlbLost: " << mpTracker->mlbLost.size() << endl;
-
-
-        for(list<Sophus::SE3f>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
-            lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
         {
-            //cout << "1" << endl;
-            if(*lbL)
-                continue;
+            Sophus::SE3f Tcw = (*lit) * Trw;
+            Sophus::SE3f Twc = Tcw.inverse();
 
-
-            KeyFrame* pKF = *lRit;
-            //cout << "KF: " << pKF->mnId << endl;
-
-            Sophus::SE3f Trw;
-
-            // If the reference keyframe was culled, traverse the spanning tree to get a suitable keyframe.
-            if (!pKF)
-                continue;
-
-            //cout << "2.5" << endl;
-
-            while(pKF->isBad())
-            {
-                //cout << " 2.bad" << endl;
-                Trw = Trw * pKF->mTcp;
-                pKF = pKF->GetParent();
-                //cout << "--Parent KF: " << pKF->mnId << endl;
-            }
-
-            if(!pKF || pKF->GetMap() != pBiggerMap)
-            {
-                //cout << "--Parent KF is from another map" << endl;
-                continue;
-            }
-
-            //cout << "3" << endl;
-
-            Trw = Trw * pKF->GetPose()*Twb; // Tcp*Tpw*Twb0=Tcb0 where b0 is the new world reference
-
-            // cout << "4" << endl;
-
-
-            if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
-            {
-                Sophus::SE3f Tbw = pKF->mImuCalib.Tbc_ * (*lit) * Trw;
-                Sophus::SE3f Twb = Tbw.inverse();
-
-                Eigen::Vector3f twb = Twb.translation();
-                Eigen::Quaternionf q = Twb.unit_quaternion();
-                f << setprecision(6) << 1e9*(*lT) << " " <<  setprecision(9) << twb(0) << " " << twb(1) << " " << twb(2)
-    << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
-            }
-            else
-            {
-                Sophus::SE3f Tcw = (*lit) * Trw;
-                Sophus::SE3f Twc = Tcw.inverse();
-
-                Eigen::Vector3f twc = Twc.translation();
-                Eigen::Quaternionf q = Twc.unit_quaternion();
-                f << setprecision(6) << 1e9*(*lT) << " " <<  setprecision(9) << twc(0) << " " << twc(1) << " " << twc(2)
-    << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
-            }
-
-            // cout << "5" << endl;
+            Eigen::Vector3f twc = Twc.translation();
+            Eigen::Quaternionf q = Twc.unit_quaternion();
+            f << setprecision(6) << 1e9*(*lT) << " " <<  setprecision(9) << twc(0) << " " << twc(1) << " " << twc(2) <<
+" " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
         }
-        //cout << "end saving trajectory" << endl;
-        f.close();
-        cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
-    }*/
+
+        // cout << "5" << endl;
+    }
+    //cout << "end saving trajectory" << endl;
+    f.close();
+    cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
+}*/
 
 
     /*void System::SaveKeyFrameTrajectoryEuRoC_old(const string &filename)
+{
+    cout << endl << "Saving keyframe trajectory to " << filename << " ..." << endl;
+
+    vector<Map*> vpMaps = mpAtlas->GetAllMaps();
+    Map* pBiggerMap;
+    int numMaxKFs = 0;
+    for(Map* pMap :vpMaps)
     {
-        cout << endl << "Saving keyframe trajectory to " << filename << " ..." << endl;
-
-        vector<Map*> vpMaps = mpAtlas->GetAllMaps();
-        Map* pBiggerMap;
-        int numMaxKFs = 0;
-        for(Map* pMap :vpMaps)
+        if(pMap->GetAllKeyFrames().size() > numMaxKFs)
         {
-            if(pMap->GetAllKeyFrames().size() > numMaxKFs)
-            {
-                numMaxKFs = pMap->GetAllKeyFrames().size();
-                pBiggerMap = pMap;
-            }
+            numMaxKFs = pMap->GetAllKeyFrames().size();
+            pBiggerMap = pMap;
         }
+    }
 
-        vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
-        sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
-        // Transform all keyframes so that the first keyframe is at the origin.
-        // After a loop closure the first keyframe might not be at the origin.
-        ofstream f;
-        f.open(filename.c_str());
-        f << fixed;
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    ofstream f;
+    f.open(filename.c_str());
+    f << fixed;
 
-        for(size_t i=0; i<vpKFs.size(); i++)
+    for(size_t i=0; i<vpKFs.size(); i++)
+    {
+        KeyFrame* pKF = vpKFs[i];
+
+       // pKF->SetPose(pKF->GetPose()*Two);
+
+        if(pKF->isBad())
+            continue;
+        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
         {
-            KeyFrame* pKF = vpKFs[i];
+            cv::Mat R = pKF->GetImuRotation().t();
+            vector<float> q = Converter::toQuaternion(R);
+            cv::Mat twb = pKF->GetImuPosition();
+            f << setprecision(6) << 1e9*pKF->mTimeStamp  << " " <<  setprecision(9) << twb.at<float>(0) << " " <<
+twb.at<float>(1) << " " << twb.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
-           // pKF->SetPose(pKF->GetPose()*Two);
-
-            if(pKF->isBad())
-                continue;
-            if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
-            {
-                cv::Mat R = pKF->GetImuRotation().t();
-                vector<float> q = Converter::toQuaternion(R);
-                cv::Mat twb = pKF->GetImuPosition();
-                f << setprecision(6) << 1e9*pKF->mTimeStamp  << " " <<  setprecision(9) << twb.at<float>(0) << " " <<
-    twb.at<float>(1) << " " << twb.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
-
-            }
-            else
-            {
-                cv::Mat R = pKF->GetRotation();
-                vector<float> q = Converter::toQuaternion(R);
-                cv::Mat t = pKF->GetCameraCenter();
-                f << setprecision(6) << 1e9*pKF->mTimeStamp << " " <<  setprecision(9) << t.at<float>(0) << " " <<
-    t.at<float>(1) << " " << t.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
-            }
         }
-        f.close();
-    }*/
+        else
+        {
+            cv::Mat R = pKF->GetRotation();
+            vector<float> q = Converter::toQuaternion(R);
+            cv::Mat t = pKF->GetCameraCenter();
+            f << setprecision(6) << 1e9*pKF->mTimeStamp << " " <<  setprecision(9) << t.at<float>(0) << " " <<
+t.at<float>(1) << " " << t.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+        }
+    }
+    f.close();
+}*/
 
     void System::SaveKeyFrameTrajectoryEuRoC(const string &filename)
     {
@@ -1163,59 +1235,59 @@ namespace ORB_SLAM3
     }
 
     /*void System::SaveTrajectoryKITTI(const string &filename)
+{
+    cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
+    if(mSensor==MONOCULAR)
     {
-        cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
-        if(mSensor==MONOCULAR)
+        cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << endl;
+        return;
+    }
+
+    vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    cv::Mat Two = vpKFs[0]->GetPoseInverse();
+
+    ofstream f;
+    f.open(filename.c_str());
+    f << fixed;
+
+    // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
+    // We need to get first the keyframe pose and then concatenate the relative transformation.
+    // Frames not localized (tracking failure) are not saved.
+
+    // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
+    // which is true when tracking failed (lbL).
+    list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
+    list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
+    for(list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
+lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++)
+    {
+        ORB_SLAM3::KeyFrame* pKF = *lRit;
+
+        cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
+
+        while(pKF->isBad())
         {
-            cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << endl;
-            return;
+            Trw = Trw * Converter::toCvMat(pKF->mTcp.matrix());
+            pKF = pKF->GetParent();
         }
 
-        vector<KeyFrame*> vpKFs = mpAtlas->GetAllKeyFrames();
-        sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+        Trw = Trw * pKF->GetPoseCv() * Two;
 
-        // Transform all keyframes so that the first keyframe is at the origin.
-        // After a loop closure the first keyframe might not be at the origin.
-        cv::Mat Two = vpKFs[0]->GetPoseInverse();
+        cv::Mat Tcw = (*lit)*Trw;
+        cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
+        cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
 
-        ofstream f;
-        f.open(filename.c_str());
-        f << fixed;
-
-        // Frame pose is stored relative to its reference keyframe (which is optimized by BA and pose graph).
-        // We need to get first the keyframe pose and then concatenate the relative transformation.
-        // Frames not localized (tracking failure) are not saved.
-
-        // For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
-        // which is true when tracking failed (lbL).
-        list<ORB_SLAM3::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
-        list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
-        for(list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
-    lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++)
-        {
-            ORB_SLAM3::KeyFrame* pKF = *lRit;
-
-            cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
-
-            while(pKF->isBad())
-            {
-                Trw = Trw * Converter::toCvMat(pKF->mTcp.matrix());
-                pKF = pKF->GetParent();
-            }
-
-            Trw = Trw * pKF->GetPoseCv() * Two;
-
-            cv::Mat Tcw = (*lit)*Trw;
-            cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
-            cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
-
-            f << setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)  << " " << Rwc.at<float>(0,2) << " "
-    << twc.at<float>(0) << " " << Rwc.at<float>(1,0) << " " << Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2) << " "
-    << twc.at<float>(1) << " " << Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)  << " " << Rwc.at<float>(2,2) << " "
-    << twc.at<float>(2) << endl;
-        }
-        f.close();
-    }*/
+        f << setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)  << " " << Rwc.at<float>(0,2) << " "  <<
+twc.at<float>(0) << " " << Rwc.at<float>(1,0) << " " << Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2) << " "  <<
+twc.at<float>(1) << " " << Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)  << " " << Rwc.at<float>(2,2) << " "  <<
+twc.at<float>(2) << endl;
+    }
+    f.close();
+}*/
 
     void System::SaveTrajectoryKITTI(const string &filename)
     {
@@ -1367,7 +1439,6 @@ namespace ORB_SLAM3
 
     Eigen::Vector3f System::GetImuVwb() { return mpTracker->GetImuVwb(); }
 
-    bool System::isImuPreintegrated() { return mpTracker->isImuPreintegrated(); }
 
     double System::GetTimeFromIMUInit()
     {
@@ -1418,68 +1489,65 @@ namespace ORB_SLAM3
     void System::InsertTrackTime(double &time) { mpTracker->vdTrackTotal_ms.push_back(time); }
 #endif
 
+    /**
+     * @brief 保存地图
+     * @param type 保存类型
+     */
     bool System::SaveAtlas(int type)
     {
-        try
+        // mStrSaveAtlasToFile 如果配置文件里面没有指定，则不会保存地图
+        if (!mStrSaveAtlasToFile.empty())
         {
-            if (!mStrSaveAtlasToFile.empty())
+            // clock_t start = clock();
+
+            // Save the current session
+            // 1. 预保存想要保存的数据
+            mpAtlas->PreSave();
+
+            // 2. 确定文件名字
+            string pathSaveFileName = "./";
+            pathSaveFileName = pathSaveFileName.append(mStrSaveAtlasToFile);
+            pathSaveFileName = pathSaveFileName.append(".osa");
+
+            // 3. 保存词典的校验结果及名字
+            string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, TEXT_FILE);
+            std::size_t found = mStrVocabularyFilePath.find_last_of("/\\");
+            string strVocabularyName = mStrVocabularyFilePath.substr(found + 1);
+
+            if (type == TEXT_FILE) // File text
             {
-                // clock_t start = clock();
+                cout << "Starting to write the save text file " << endl;
+                std::remove(pathSaveFileName.c_str());
+                std::ofstream ofs(pathSaveFileName, std::ios::binary);
+                boost::archive::text_oarchive oa(ofs);
 
-                // Save the current session
-                // cout << "Starting presave operation" << endl;
-                mpAtlas->PreSave();
-                // cout << "Finished presave operation" << endl;
-
-                string pathSaveFileName = "./";
-                pathSaveFileName = pathSaveFileName.append(mStrSaveAtlasToFile);
-                pathSaveFileName = pathSaveFileName.append(".osa");
-
-                string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, TEXT_FILE);
-                std::size_t found = mStrVocabularyFilePath.find_last_of("/\\");
-                string strVocabularyName = mStrVocabularyFilePath.substr(found + 1);
-
-                if (type == TEXT_FILE) // File text
-                {
-                    cout << "Starting to write the save text file to " << pathSaveFileName.c_str() << endl;
-                    std::remove(pathSaveFileName.c_str());
-                    std::ofstream ofs(pathSaveFileName, std::ios::binary);
-                    boost::archive::text_oarchive oa(ofs);
-
-                    oa << strVocabularyName;
-                    oa << strVocabularyChecksum;
-                    oa << mpAtlas;
-                    cout << "End to write the save text file" << endl;
-                }
-                else if (type == BINARY_FILE) // File binary
-                {
-                    cout << "Starting to write the save binary file to " << pathSaveFileName.c_str() << endl;
-                    std::remove(pathSaveFileName.c_str());
-                    std::ofstream ofs(pathSaveFileName, std::ios::binary);
-                    boost::archive::binary_oarchive oa(ofs);
-                    oa << strVocabularyName;
-                    oa << strVocabularyChecksum;
-                    oa << mpAtlas;
-                    cout << "End to write save binary file" << endl;
-                }
+                oa << strVocabularyName;
+                oa << strVocabularyChecksum;
+                oa << mpAtlas;
+                cout << "End to write the save text file" << endl;
+            }
+            else if (type == BINARY_FILE) // File binary
+            {
+                cout << "Starting to write the save binary file" << endl;
+                std::remove(pathSaveFileName.c_str());
+                std::ofstream ofs(pathSaveFileName, std::ios::binary);
+                boost::archive::binary_oarchive oa(ofs);
+                oa << strVocabularyName;
+                oa << strVocabularyChecksum;
+                oa << mpAtlas;
+                cout << "End to write save binary file" << endl;
             }
         }
-        catch (const std::exception &e)
-        {
-            std::cerr << e.what() << std::endl;
-            return false;
-        }
-        catch (...)
-        {
-            std::cerr << "Unknows exeption" << std::endl;
-            return false;
-        }
-
         return true;
     }
 
+    /**
+     * @brief 加载地图
+     * @param type 保存类型
+     */
     bool System::LoadAtlas(int type)
     {
+        // 1. 加载地图文件
         string strFileVoc, strVocChecksum;
         bool isRead = false;
 
@@ -1489,7 +1557,7 @@ namespace ORB_SLAM3
 
         if (type == TEXT_FILE) // File text
         {
-            cout << "Starting to read the save text file " << pathLoadFileName.c_str() << endl;
+            cout << "Starting to read the save text file " << endl;
             std::ifstream ifs(pathLoadFileName, std::ios::binary);
             if (!ifs.good())
             {
@@ -1505,7 +1573,7 @@ namespace ORB_SLAM3
         }
         else if (type == BINARY_FILE) // File binary
         {
-            cout << "Starting to read the save binary file " << pathLoadFileName.c_str() << endl;
+            cout << "Starting to read the save binary file" << endl;
             std::ifstream ifs(pathLoadFileName, std::ios::binary);
             if (!ifs.good())
             {
@@ -1520,9 +1588,11 @@ namespace ORB_SLAM3
             isRead = true;
         }
 
+        // 2. 如果加载成功
         if (isRead)
         {
             // Check if the vocabulary is the same
+            //  校验词典是否一样
             string strInputVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, TEXT_FILE);
 
             if (strInputVocabularyChecksum.compare(strVocChecksum) != 0)
@@ -1532,6 +1602,7 @@ namespace ORB_SLAM3
                 return false; // Both are differents
             }
 
+            // 加载对应数据
             mpAtlas->SetKeyFrameDababase(mpKeyFrameDatabase);
             mpAtlas->SetORBVocabulary(mpVocabulary);
             mpAtlas->PostLoad();
@@ -1541,6 +1612,7 @@ namespace ORB_SLAM3
         return false;
     }
 
+    // 校验词典文件，哈希出一个值，两个哈希值一样表示是同一文件
     string System::CalculateCheckSum(string filename, int type)
     {
         string checksum = "";
@@ -1580,7 +1652,6 @@ namespace ORB_SLAM3
 
         return checksum;
     }
-
 
     vector<MapPoint *> System::GetAllMapPoints()
     {

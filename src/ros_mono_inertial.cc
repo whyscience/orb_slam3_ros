@@ -63,8 +63,8 @@ int main(int argc, char **argv)
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
 
     // debug code
-    // imu_topic = "/imu0";
-    // image_topic = "/cam0/image_raw";
+     imu_topic = "/imu0";
+     image_topic = "/cam0/image_raw";
 
     node->declare_parameter<std::string>("world_frame_id", "map");
     node->declare_parameter<std::string>("cam_frame_id", "camera");

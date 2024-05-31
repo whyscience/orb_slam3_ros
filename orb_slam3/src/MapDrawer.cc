@@ -353,7 +353,10 @@ namespace ORB_SLAM3
                 {
                     KeyFrame *pKF = vpKFs[i];
                     Eigen::Matrix4f Twc = pKF->GetPoseInverse().matrix();
-                    unsigned int index_color = pKF->mnOriginMapId;
+                    // unsigned int index_color = pKF->mnOriginMapId;
+                    // 当生成的map id操作6个之后就会越界，访问的数据就会出错或者直接段错误。
+                    // https://zhuanlan.zhihu.com/p/339506878
+                    unsigned int index_color = pKF->mnOriginMapId % (sizeof(mfFrameColors) / sizeof(mfFrameColors[0]));
 
                     glPushMatrix();
 

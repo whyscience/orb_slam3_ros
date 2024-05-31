@@ -2094,6 +2094,11 @@ namespace ORB_SLAM3
                     }
                     return;
                 }
+                else
+                {
+                    // 16、Track在NO_IMAGES_YET状态时，如果发生时间戳跳动，会导致不带IMU的模式无法初始化
+                    // 增加else处理不带imu的情况 TODO
+                }
             }
         }
 

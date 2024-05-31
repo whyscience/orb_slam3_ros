@@ -1557,6 +1557,7 @@ namespace ORB_SLAM3
                                    const vector<Point> &pattern)
     {
         // 清空保存描述子信息的容器
+        //computeDescriptors中重复定义descriptors矩阵 TODO
         descriptors = Mat::zeros((int) keypoints.size(), 32, CV_8UC1);
 
         // 开始遍历特征点

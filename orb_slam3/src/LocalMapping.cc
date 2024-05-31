@@ -1151,6 +1151,7 @@ namespace ORB_SLAM3
     {
         unique_lock<mutex> lock(mMutexStop);
         unique_lock<mutex> lock2(mMutexFinish);
+        // unique_lock<mutex> lock3(mMutexNewKFs);//LocalMapping::Release()释放访问关键帧队列冲突
         if (mbFinished)
             return;
         mbStopped = false;

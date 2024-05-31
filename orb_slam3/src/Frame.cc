@@ -508,7 +508,7 @@ namespace ORB_SLAM3
         for (unsigned int i = 0; i < FRAME_GRID_COLS; i++)
             for (unsigned int j = 0; j < FRAME_GRID_ROWS; j++)
             {
-                mGrid[i][j].reserve(nReserve);
+                mGrid[i][j].reserve(nReserve);//14、AssignFeaturesToGrid中预先扩增vector无效计算  TODO
                 if (Nleft != -1)
                 {
                     mGridRight[i][j].reserve(nReserve);

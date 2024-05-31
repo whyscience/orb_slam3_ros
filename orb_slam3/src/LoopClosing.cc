@@ -694,7 +694,9 @@ namespace ORB_SLAM3
         int nProjMatchesRep = 100;
 
         // 2.点数如果不符合返回false
-        if (nNumProjMatches >= nProjMatches)
+        // 此处的阈值nProjMatches设置得不合理，会使得函数进行多余的优化代码计算后，才发现满足不了第二个阈值限制的要求。
+        // TODO
+        if (nNumProjMatches >= nProjMatches) // 30
         {
             // Verbose::PrintMess("Sim3 reffine: There are " + to_string(nNumProjMatches) + " initial matches ",
             // Verbose::VERBOSITY_DEBUG);
@@ -719,7 +721,13 @@ namespace ORB_SLAM3
             if (numOptMatches > nProjOptMatches)
             {
                 //! bug, 以下gScw_estimation应该通过上述sim3优化后的位姿来更新。以下mScw应该改为 gscm * gswm^-1
-                g2o::Sim3 gScw_estimation(gScw.rotation(), gScw.translation(), 1.0);
+                // g2o::Sim3 gScw_estimation(gScw.rotation(), gScw.translation(), 1.0);
+                // https://blog.csdn.net/qq_44876051/article/details/122575899
+                // 利用OptimizeSim3优化匹配帧到当前帧的变换矩阵gScm后，最终的结果并不是基于优化后的结果给出的
+                Sophus::SE3d mTmw = pMatchedKF->GetPose().cast<double>();
+                g2o::Sim3 gSmw(mTmw.unit_quaternion(), mTmw.translation(), 1.0);
+                g2o::Sim3 gScw_estimation = gScm * gSmw;
+
 
                 vector<MapPoint *> vpMatchedMP;
                 vpMatchedMP.resize(mpCurrentKF->GetMapPointMatches().size(), static_cast<MapPoint *>(NULL));
@@ -1786,8 +1794,8 @@ namespace ORB_SLAM3
         while (spLocalWindowKFs.size() < numTemporalKFs && nNumTries < nMaxTries)
         {
             vector<KeyFrame *> vpNewCovKFs;
-            //vpNewCovKFs.empty();
-            // 遍历创口内的每一个关键帧
+            // vpNewCovKFs.empty();
+            //  遍历创口内的每一个关键帧
             for (KeyFrame *pKFi: spLocalWindowKFs)
             {
                 // 拿到一些二级共视关键帧
@@ -2615,6 +2623,8 @@ namespace ORB_SLAM3
 
         // 为后续SearchAndFuse准备数据
         // 拿出融合帧的局部窗口, 确保最后是(1+5), 1: 融合帧自己 2: 5个共视关键帧
+        // mvpMergeConnectedKFs在使用前应该先清除 https://blog.csdn.net/qq_44876051/article/details/122575899
+        mvpMergeConnectedKFs.clear();
         mvpMergeConnectedKFs.push_back(mpMergeMatchedKF);
         vector<KeyFrame *> aux = mpMergeMatchedKF->GetVectorCovisibleKeyFrames();
         mvpMergeConnectedKFs.insert(mvpMergeConnectedKFs.end(), aux.begin(), aux.end());
@@ -2627,7 +2637,7 @@ namespace ORB_SLAM3
         mpCurrentKF->UpdateConnections();
         vpCurrentConnectedKFs.push_back(mpCurrentKF);
         /*vpCurrentConnectedKFs = mpCurrentKF->GetVectorCovisibleKeyFrames();
-    vpCurrentConnectedKFs.push_back(mpCurrentKF);*/
+            vpCurrentConnectedKFs.push_back(mpCurrentKF);*/
         aux = mpCurrentKF->GetVectorCovisibleKeyFrames();
         vpCurrentConnectedKFs.insert(vpCurrentConnectedKFs.end(), aux.begin(), aux.end());
         if (vpCurrentConnectedKFs.size() > 6)

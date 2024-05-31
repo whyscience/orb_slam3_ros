@@ -22,12 +22,12 @@ def generate_launch_description():
             name='orb_slam3',
             output='screen',
             remappings=[
-                ('/camera/image_raw', '/camera/live_view_back'),
+                ('/camera/image_raw', '/camera/live_view_raw'),
                 ('/imu', '/imu/data')
             ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
-                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'usb_cam_fisheye.yaml')},
+                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'sony_8mm_bno055.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},
                 {'imu_frame_id': 'imu'},

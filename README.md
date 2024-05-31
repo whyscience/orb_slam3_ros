@@ -215,21 +215,26 @@ docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 
 # https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr
 pip3 install rosbags>=0.9.12 # might need -U
 rosbags-convert --src <ros2_bag_folder> --dst calib_01.bag --exclude-topic <non_img_and_imu_topics>
+rosbags-convert --src rosbag2_2024_05_31-18_46_27-BNO055-SONY/ --dst bno055-sony-kiwi-104.bag
 
 FOLDER=$(pwd)
 xhost +local:root
 docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     -v "$FOLDER:/data" kalibr
+source devel/setup.bash
 
 # Try ['pinhole-radtan', 'pinhole-equi', 'pinhole-fov', 'omni-none', 'omni-radtan', 'eucm-none', 'ds-none'].
 # use omni-radtan for KannalaBrandt8
-source devel/setup.bash
 rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
+
+#usb-cam-bno055-sony-kiwi-104.bag
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/bno055-sony-kiwi-104.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_raw
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/bno055-sony-kiwi-104-camchain.yaml --bag /data/bno055-sony-kiwi-104.bag
 
 # rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
 
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
 ```
 
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container

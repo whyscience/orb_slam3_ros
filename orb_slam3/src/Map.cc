@@ -220,7 +220,7 @@ namespace ORB_SLAM3
 
     void Map::clear()
     {
-        unique_lock<mutex> lock(mMutexMap);//在Map::clear()没有增加锁访问
+        // unique_lock<mutex> lock(mMutexMap);//在Map::clear()没有增加锁访问
         //    for(set<MapPoint*>::iterator sit=mspMapPoints.begin(), send=mspMapPoints.end(); sit!=send; sit++)
         //        delete *sit;
 
@@ -239,7 +239,7 @@ namespace ORB_SLAM3
         mvpKeyFrameOrigins.clear();
         mbIMU_BA1 = false;
         mbIMU_BA2 = false;
-        unique_lock<mutex> lock2(mMutexMapUpdate);
+        // unique_lock<mutex> lock2(mMutexMapUpdate);
     }
 
     bool Map::IsInUse() { return mIsInUse; }

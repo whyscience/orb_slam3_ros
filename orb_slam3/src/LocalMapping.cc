@@ -1657,7 +1657,9 @@ namespace ORB_SLAM3
             const float cosg = gI.dot(dirG);
             const float ang = acos(cosg);
             // v/nv 表示垂直于两个向量的轴  ang 表示转的角度，组成角轴
-            Eigen::Vector3f vzg = v * ang / nv;
+            Eigen::Vector3f vzg(0.0f, 0.0f, 0.0f); // = v*ang/nv;
+            if (nv != 0 && !isnan(cosg) && !isnan(ang))
+                vzg = v * ang / nv;
             // 获得重力坐标系到世界坐标系的旋转矩阵的初值
             Rwg = Sophus::SO3f::exp(vzg).matrix();
             mRwg = Rwg.cast<double>();

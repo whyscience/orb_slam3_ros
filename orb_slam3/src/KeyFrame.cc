@@ -247,11 +247,14 @@ namespace ORB_SLAM3
         list<int> lWs;
         for (size_t i = 0, iend = vPairs.size(); i < iend; i++)
         {
-            if (!vPairs[i].second->isBad())
+            if (vPairs[i].second != NULL)
             {
-                // push_front 后变成从大到小
-                lKFs.push_front(vPairs[i].second);
-                lWs.push_front(vPairs[i].first);
+                if (!vPairs[i].second->isBad())
+                {
+                    // push_front 后变成从大到小
+                    lKFs.push_front(vPairs[i].second);
+                    lWs.push_front(vPairs[i].first);
+                }
             }
         }
 

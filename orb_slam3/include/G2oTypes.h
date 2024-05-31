@@ -584,7 +584,6 @@ namespace ORB_SLAM3
         // 预积分中对应的状态对偏置的雅可比
         const Eigen::Matrix3d JRg, JVg, JPg;
         const Eigen::Matrix3d JVa, JPa;
-
         IMU::Preintegrated *mpInt; // 预积分
         const double dt; // 预积分时间
         Eigen::Vector3d g; // 0, 0, -IMU::GRAVITY_VALUE

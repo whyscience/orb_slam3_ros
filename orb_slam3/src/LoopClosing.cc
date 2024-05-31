@@ -1969,7 +1969,6 @@ namespace ORB_SLAM3
             // 根据上面计算得到的融合矫正后的初始位姿(Sim3),更新窗口内每个关键帧的mTcwMerge(矫正后的初始位姿)
             double s = g2oCorrectedSiw.scale();
             pKFi->mfScale = s;
-
             // s*Riw * Pw + tiw = Pi  此时Pi在i坐标系下的坐标，尺度保留的是原来的
             // Riw * Pw + tiw/s = Pi/s 此时Pi/s在i坐标系下的坐标，尺度是最新的的，所以Rt要这么保留
             Sophus::SE3d correctedTiw(g2oCorrectedSiw.rotation(), g2oCorrectedSiw.translation() / s); // 修正尺度

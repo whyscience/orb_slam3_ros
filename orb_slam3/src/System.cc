@@ -144,7 +144,7 @@ namespace ORB_SLAM3
             if (!bVocLoad)
             {
                 cerr << "Wrong path to vocabulary. " << endl;
-                cerr << "Falied to open at: " << strVocFile << endl;
+                cerr << "Failed to open at: " << strVocFile << endl;
                 exit(-1);
             }
             cout << "Vocabulary loaded!" << endl << endl;
@@ -168,7 +168,7 @@ namespace ORB_SLAM3
             if (!bVocLoad)
             {
                 cerr << "Wrong path to vocabulary. " << endl;
-                cerr << "Falied to open at: " << strVocFile << endl;
+                cerr << "Failed to open at: " << strVocFile << endl;
                 exit(-1);
             }
             cout << "Vocabulary loaded!" << endl << endl;
@@ -439,6 +439,7 @@ namespace ORB_SLAM3
         mTrackingState = mpTracker->mState;
         mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
         mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+        mTrackedKeyPoints = mpTracker->mCurrentFrame.mvKeys;
         return Tcw;
     }
 
@@ -533,6 +534,7 @@ namespace ORB_SLAM3
         mTrackingState = mpTracker->mState;
         mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
         mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+        mTrackedKeyPoints = mpTracker->mCurrentFrame.mvKeys;
 
         return Tcw;
     }
@@ -1439,6 +1441,7 @@ twc.at<float>(2) << endl;
 
     Eigen::Vector3f System::GetImuVwb() { return mpTracker->GetImuVwb(); }
 
+    bool System::isImuPreintegrated() { return mpTracker->isImuPreintegrated(); }
 
     double System::GetTimeFromIMUInit()
     {
@@ -1495,6 +1498,7 @@ twc.at<float>(2) << endl;
      */
     bool System::SaveAtlas(int type)
     {
+        //try todo add try
         // mStrSaveAtlasToFile 如果配置文件里面没有指定，则不会保存地图
         if (!mStrSaveAtlasToFile.empty())
         {
@@ -1516,7 +1520,7 @@ twc.at<float>(2) << endl;
 
             if (type == TEXT_FILE) // File text
             {
-                cout << "Starting to write the save text file " << endl;
+                cout << "Starting to write the save text file to " << pathSaveFileName.c_str() << endl;
                 std::remove(pathSaveFileName.c_str());
                 std::ofstream ofs(pathSaveFileName, std::ios::binary);
                 boost::archive::text_oarchive oa(ofs);
@@ -1528,7 +1532,7 @@ twc.at<float>(2) << endl;
             }
             else if (type == BINARY_FILE) // File binary
             {
-                cout << "Starting to write the save binary file" << endl;
+                cout << "Starting to write the save binary file to " << pathSaveFileName.c_str() << endl;
                 std::remove(pathSaveFileName.c_str());
                 std::ofstream ofs(pathSaveFileName, std::ios::binary);
                 boost::archive::binary_oarchive oa(ofs);
@@ -1557,7 +1561,7 @@ twc.at<float>(2) << endl;
 
         if (type == TEXT_FILE) // File text
         {
-            cout << "Starting to read the save text file " << endl;
+            cout << "Starting to read the save text file " << pathLoadFileName.c_str() << endl;
             std::ifstream ifs(pathLoadFileName, std::ios::binary);
             if (!ifs.good())
             {
@@ -1573,7 +1577,7 @@ twc.at<float>(2) << endl;
         }
         else if (type == BINARY_FILE) // File binary
         {
-            cout << "Starting to read the save binary file" << endl;
+            cout << "Starting to read the save binary file " << pathLoadFileName.c_str() << endl;
             std::ifstream ifs(pathLoadFileName, std::ios::binary);
             if (!ifs.good())
             {

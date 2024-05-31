@@ -78,7 +78,7 @@ namespace ORB_SLAM3
         }
         cv::Mat camera2DistortionCoef()
         {
-            return cv::Mat(vPinHoleDistorsion2_.size(), 1, CV_32F, vPinHoleDistorsion1_.data());
+            return cv::Mat(vPinHoleDistorsion2_.size(), 1, CV_32F, vPinHoleDistorsion2_.data());
         }
 
         Sophus::SE3f Tlr() { return Tlr_; }

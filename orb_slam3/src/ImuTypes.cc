@@ -398,6 +398,10 @@ namespace ORB_SLAM3
             // 计算偏置的变化量
             Eigen::Vector3f dbg;
             dbg << b_.bwx - b.bwx, b_.bwy - b.bwy, b_.bwz - b.bwz;
+            // if (dbg.array().isNaN()[0])
+            //     dbg = Eigen::Vector3f(0, 0, 0);
+            // if (JRg.array().isNaN()(0, 0))
+            //     JRg.setZero();
             // 考虑偏置后，dR对偏置线性化的近似求解,邱笑晨《预积分总结与公式推导》P13～P14
             // Forster论文公式（44）yP17也有结果（但没有推导），后面两个函数GetDeltaPosition和GetDeltaPosition也是基于此推导的
             return NormalizeRotation(dR * Sophus::SO3f::exp(JRg * dbg).matrix());

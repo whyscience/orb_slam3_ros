@@ -121,6 +121,42 @@ namespace ORB_SLAM3
             }
         }
 
+        // Obtain the angles which will be used to rotate the world frame
+        Tc0w = Sophus::SE3f();
+        if (sensor == System::MONOCULAR)
+        {
+            float dWorldRPY[3] = {};
+
+            string strAngleNames[3] = {"roll", "pitch", "yaw"};
+
+            cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
+
+            std::cout << "Rotate world frame by (rad): ";
+            for (int i = 0; i < 3; i++)
+            {
+                cv::FileNode node = fSettings["WorldRPY." + strAngleNames[i]];
+                if (!node.empty() && node.isReal())
+                {
+                    dWorldRPY[i] = node.real();
+                }
+                else
+                {
+                    dWorldRPY[i] = 0;
+                }
+                std::cout << strAngleNames[i] << " " << dWorldRPY[i] << " ";
+            }
+            std::cout << endl;
+
+            Eigen::AngleAxisf AngleR(dWorldRPY[0], Eigen::Vector3f::UnitX());
+            Eigen::AngleAxisf AngleP(dWorldRPY[1], Eigen::Vector3f::UnitY());
+            Eigen::AngleAxisf AngleY(dWorldRPY[2], Eigen::Vector3f::UnitZ());
+            Eigen::Quaternionf qRPY = AngleR * AngleP * AngleY;
+            Eigen::Matrix3f RotRPY = qRPY.matrix();
+            Tc0w = Sophus::SE3f(RotRPY, Eigen::Vector3f::Zero());
+            // std::cout << "Tc0w pos is " << Tc0w.translation()<< endl;
+            // std::cout << "Tc0w rot is " << Tc0w.rotationMatrix() << endl;
+        }
+
         initID = 0;
         lastID = 0;
         mbInitWith3KFs = false;
@@ -2954,6 +2990,7 @@ namespace ORB_SLAM3
                 // Set Frame Poses
                 // Step 7 将初始化的第一帧作为世界坐标系，因此第一帧变换矩阵为单位矩阵
                 mInitialFrame.SetPose(Sophus::SE3f());
+                // mInitialFrame.SetPose(Tc0w);
                 // 由Rcw和tcw构造Tcw,并赋值给mTcw，mTcw为世界坐标系到相机坐标系的变换矩阵
                 mCurrentFrame.SetPose(Tcw);
 
@@ -3003,6 +3040,9 @@ namespace ORB_SLAM3
             Eigen::Vector3f worldPos;
             worldPos << mvIniP3D[i].x, mvIniP3D[i].y, mvIniP3D[i].z;
             // Step 3.1 用3D点构造地图点
+            Sophus::SE3f Tc0mp(Eigen::Matrix3f::Identity(), worldPos);
+            Sophus::SE3f Twmp = Tc0w.inverse() * Tc0mp;
+            worldPos = Twmp.translation();
             MapPoint *pMP = new MapPoint(worldPos, pKFcur, mpAtlas->GetCurrentMap());
 
             // Step 3.2 为该MapPoint添加属性：

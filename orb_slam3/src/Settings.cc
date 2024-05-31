@@ -368,10 +368,10 @@ namespace ORB_SLAM3
             float cx = readParameter<float>(fSettings, "Camera2.cx", found);
             float cy = readParameter<float>(fSettings, "Camera2.cy", found);
 
-            float k0 = readParameter<float>(fSettings, "Camera1.k1", found);
-            float k1 = readParameter<float>(fSettings, "Camera1.k2", found);
-            float k2 = readParameter<float>(fSettings, "Camera1.k3", found);
-            float k3 = readParameter<float>(fSettings, "Camera1.k4", found);
+            float k0 = readParameter<float>(fSettings, "Camera2.k1", found);
+            float k1 = readParameter<float>(fSettings, "Camera2.k2", found);
+            float k2 = readParameter<float>(fSettings, "Camera2.k3", found);
+            float k3 = readParameter<float>(fSettings, "Camera2.k4", found);
 
             vCalibration = {fx, fy, cx, cy, k0, k1, k2, k3};
 
@@ -645,7 +645,7 @@ namespace ORB_SLAM3
 
                 if (!settings.vPinHoleDistorsion2_.empty())
                 {
-                    output << "\t-Camera 1 distortion parameters: [ ";
+                    output << "\t-Camera 2 distortion parameters: [ ";
                     for (float d: settings.vPinHoleDistorsion2_)
                     {
                         output << " " << d;
@@ -668,6 +668,16 @@ namespace ORB_SLAM3
                 output << " " << settings.calibration1_->getParameter(i);
             }
             output << " ]" << endl;
+
+            if (settings.sensor_ == System::STEREO || settings.sensor_ == System::IMU_STEREO)
+            {
+                output << "\t-Camera 2 parameters after rectification: [ ";
+                for (size_t i = 0; i < settings.calibration2_->size(); i++)
+                {
+                    output << " " << settings.calibration2_->getParameter(i);
+                }
+                output << " ]" << endl;
+            }
         }
         else if (settings.bNeedToResize1_)
         {

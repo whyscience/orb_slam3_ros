@@ -7,6 +7,7 @@
 #include "common.h"
 
 // Variables for ORB-SLAM3
+rclcpp::Clock::SharedPtr clock_;
 ORB_SLAM3::System *pSLAM;
 ORB_SLAM3::System::eSensor sensor_type = ORB_SLAM3::System::NOT_SET;
 std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
@@ -355,9 +356,9 @@ sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapP
 {
     const int num_channels = 3; // x y z
 
-    if (map_points.size() == 0)
+    if (map_points.empty())
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Map point vector is empty!");
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("rclcpp"), *clock_, 1000, "No map points to publish");
     }
 
     sensor_msgs::msg::PointCloud2 cloud;

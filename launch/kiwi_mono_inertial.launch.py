@@ -23,15 +23,15 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'imu_topic': '/imu/data'},
-                {'image_topic': '/camera/live_view_raw'},
+                {'image_topic': '/camera/live_view_back'},
                 {'image_topic_compressed': '/camera/color/image_raw/compressed'},
+                {'use_compressed': False},
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
-                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'sony_8mm_bno055.yaml')},
+                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'usb_cam_fisheye.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},
                 {'imu_frame_id': 'imu'},
                 {'enable_pangolin': True},
-                {'use_compressed': True},
                 {'use_sim_time': LaunchConfiguration('use_sim_time')}
             ]
         ),

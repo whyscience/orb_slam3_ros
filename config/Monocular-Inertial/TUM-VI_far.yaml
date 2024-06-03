@@ -30,7 +30,7 @@ Camera.fps: 20
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
-# Transformation from body-frame (imu) to camera
+# Transformation from camera to body-frame (imu)
 IMU.T_b_c1: !!opencv-matrix
    rows: 4
    cols: 4

@@ -215,7 +215,9 @@ docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 
 # https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr
 pip3 install rosbags>=0.9.12 # might need -U
 rosbags-convert --src <ros2_bag_folder> --dst calib_01.bag --exclude-topic <non_img_and_imu_topics>
-rosbags-convert --src rosbag2_2024_05_31-18_46_27-BNO055-SONY/ --dst bno055-sony-kiwi-104.bag
+
+ROS1_BAG="usb-cam-bno055.bag"
+rosbags-convert --src rosbag2_2024_05_31-18_46_27-BNO055-SONY/ --dst $ROS1_BAG
 
 FOLDER=$(pwd)
 xhost +local:root
@@ -226,12 +228,12 @@ source devel/setup.bash
 
 # Try ['pinhole-radtan', 'pinhole-equi', 'pinhole-fov', 'omni-none', 'omni-radtan', 'eucm-none', 'ds-none'].
 # use omni-radtan for KannalaBrandt8
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/usb-cam-bno055-cali.bag
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/$ROS1_BAG --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/$ROS1_BAG
 
 #usb-cam-bno055-sony-kiwi-104.bag
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/bno055-sony-kiwi-104.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_raw
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/bno055-sony-kiwi-104-camchain.yaml --bag /data/bno055-sony-kiwi-104.bag
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/$ROS1_BAG --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_raw
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/bno055-sony-kiwi-104-camchain.yaml --bag /data/$ROS1_BAG
 
 # rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
 

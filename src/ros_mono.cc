@@ -26,6 +26,11 @@ public:
         this->get_parameter("cam_frame_id", cam_frame_id);
         this->get_parameter("enable_pangolin", enable_pangolin_);
 
+        this->declare_parameter<std::string>("image_topic", "/camera/live_view_back");
+        this->declare_parameter<std::string>("image_topic_compressed", "/camera/color/image_raw/compressed");
+        this->get_parameter("image_topic", image_topic);
+        this->get_parameter("image_topic_compressed", image_topic_compressed);
+
         // Create SLAM system. It initializes all system threads and gets ready to process frames.
         sensor_type = ORB_SLAM3::System::MONOCULAR;
         pSLAM = new ORB_SLAM3::System(voc_file_, settings_file_, sensor_type, enable_pangolin_);
@@ -33,9 +38,10 @@ public:
 
     void OnInit()
     {
+        clock_ = this->get_clock();
         image_transport::ImageTransport it(shared_from_this());
         sub_img_ = this->create_subscription<sensor_msgs::msg::Image>(
-                "/camera/image_raw", 1, std::bind(&ImageGrabber::GrabImage, this, std::placeholders::_1));
+                image_topic, 1, std::bind(&ImageGrabber::GrabImage, this, std::placeholders::_1));
         tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(shared_from_this());
 
         setup_publishers(shared_from_this(), it, this->get_name());
@@ -47,6 +53,7 @@ public:
 private:
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img_;
     std::string voc_file_, settings_file_;
+    string image_topic, image_topic_compressed;
     bool enable_pangolin_{};
 };
 

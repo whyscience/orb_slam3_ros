@@ -1,9 +1,10 @@
 import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -21,10 +22,9 @@ def generate_launch_description():
             executable='ros_mono',
             name='orb_slam3',
             output='screen',
-            remappings=[
-                ('/camera/image_raw', '/cam0/image_raw')
-            ],
             parameters=[
+                {'image_topic': '/cam0/image_raw'},
+                {'image_topic_compressed': '/camera/color/image_raw/compressed'},
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular', 'EuRoC.yaml')},
                 {'world_frame_id': 'world'},

@@ -29,6 +29,7 @@ int main(int argc, char **argv)
     auto node_name = node->get_name();
     image_transport::ImageTransport image_transport(node);
     tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+    clock_ = node->get_clock();
 
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", default_voc_file);

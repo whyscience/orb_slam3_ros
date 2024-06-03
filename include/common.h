@@ -20,6 +20,7 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include "geometry_msgs/msg/pose_stamped.hpp"

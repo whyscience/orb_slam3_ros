@@ -23,7 +23,8 @@ def generate_launch_description():
             output='screen',
             remappings=[
                 ('/camera/image_raw', '/camera/live_view_raw'),
-                ('/imu', '/imu/data')
+                ('/camera/image_raw/compressed', '/camera/color/image_raw/compressed'),
+                ('/imu', '/imu/data'),
             ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
@@ -32,6 +33,7 @@ def generate_launch_description():
                 {'cam_frame_id': 'camera'},
                 {'imu_frame_id': 'imu'},
                 {'enable_pangolin': True},
+                {'use_compressed': True},
                 {'use_sim_time': LaunchConfiguration('use_sim_time')}
             ]
         ),

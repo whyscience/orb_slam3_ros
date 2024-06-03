@@ -1,0 +1,100 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+File.version: "1.0"
+
+Camera.type: "PinHole"
+
+#cam0:
+#  T_cam_imu:
+#    - [-0.12783831145749358, -0.9890291266642368, -0.07401859721362691, 0.0008403732304832572]
+#    - [0.15604649427171474, 0.05364374609598946, -0.9862919649527193, -0.0007138939852935243]
+#    - [0.9794421155684514, -0.13763624200974572, 0.1474768020274041, 0.00016428919658348438]
+#    - [0.0, 0.0, 0.0, 1.0]
+#  cam_overlaps: []
+#  camera_model: pinhole
+#  distortion_coeffs: [-0.2515105910013623, 0.05434583311795118, 0.00241915162325483, 0.0012410026460318636]
+#  distortion_model: radtan
+#  intrinsics: [422.23722861324916, 423.08167889118806, 506.1469643625231, 336.6327861041749]
+#  resolution: [1024, 680]
+#  rostopic: /camera/live_view_raw
+#  timeshift_cam_imu: -0.04182327325477929
+
+
+# Camera calibration and distortion parameters (OpenCV)
+Camera1.fx: 422.23722861
+Camera1.fy: 423.08167889
+Camera1.cx: 506.14696436
+Camera1.cy: 336.63278610
+
+Camera1.k1: -0.2515105910
+Camera1.k2: 0.05434583311
+Camera1.p1: 0.00241915162
+Camera1.p2: 0.00124100264
+
+Camera.width: 1024
+Camera.height: 680
+
+# Camera frames per second
+Camera.fps: 10
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+# Image scale, it changes the image size to be processed (<1.0: reduce, >1.0: increase)
+Camera.imageScale: 1.0
+
+# Transformation from camera to body-frame (imu)
+IMU.T_b_c1: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [-0.127838311457, -0.98902912666, -0.0740185972, 0.0008403732,
+         0.15604649427171474, 0.053643746, -0.986291964, -0.000713893,
+         0.97944211556, -0.137636242, 0.1474768, 0.0001642891,
+         0.0, 0.0, 0.0, 1.0]
+
+# IMU noise
+IMU.NoiseGyro: 1.30348471e-03 # rad/s^0.5
+IMU.NoiseAcc: 1.4516759e-02 # m/s^1.5
+IMU.GyroWalk: 7.8724489e-06 # rad/s^1.5
+IMU.AccWalk: 8.66607388e-04 # m/s^2.5
+IMU.Frequency: 50.0
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#---------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500.0
+Viewer.imageViewScale: 2.0
+

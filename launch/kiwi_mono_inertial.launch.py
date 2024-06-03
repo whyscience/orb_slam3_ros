@@ -21,12 +21,10 @@ def generate_launch_description():
             executable='ros_mono_inertial',
             name='orb_slam3',
             output='screen',
-            remappings=[
-                ('/camera/image_raw', '/camera/live_view_raw'),
-                ('/camera/image_raw/compressed', '/camera/color/image_raw/compressed'),
-                # ('/imu/data', '/imu/data'),
-            ],
             parameters=[
+                {'imu_topic': '/imu/data'},
+                {'image_topic': '/camera/live_view_raw'},
+                {'image_topic_compressed': '/camera/color/image_raw/compressed'},
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'sony_8mm_bno055.yaml')},
                 {'world_frame_id': 'world'},

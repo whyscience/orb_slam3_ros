@@ -53,22 +53,24 @@ int main(int argc, char **argv)
     image_transport::ImageTransport image_transport(node);
     tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
-    std::string imu_topic = "/imu/data";
-    std::string image_topic = "/camera/image_raw";
-    std::string image_topic_compressed = "/camera/image_raw/compressed";
-
-    // debug code
+    std::string imu_topic, image_topic, image_topic_compressed;
+    node->declare_parameter<std::string>("imu_topic", "/imu/data");
+    node->declare_parameter<std::string>("image_topic", "/camera/image_raw");
+    node->declare_parameter<std::string>("image_topic_compressed", "/camera/color/image_raw/compressed");
+    node->get_parameter("imu_topic", imu_topic);
+    node->get_parameter("image_topic", image_topic);
+    node->get_parameter("image_topic_compressed", image_topic_compressed);
     // imu_topic = "/imu/data";
     // image_topic = "/camera/color/image_raw";
     // imu_topic = "/imu0";
     // image_topic = "/cam0/image_raw";
-    image_topic_compressed = "/camera/color/image_raw/compressed";
+    // image_topic_compressed = "/camera/color/image_raw/compressed";
     // default_voc_file = "/home/eric/ws_orb3_ros2/src/ORB_SLAM3_ROS2/orb_slam3/Vocabulary/ORBvoc.txt";
 
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", default_voc_file);
-    node->declare_parameter<std::string>("settings_file",
-                                         std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/sony_8mm_bno055.yaml");
+    node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) +
+                                                                  "/config/Monocular-Inertial/sony_8mm_bno055.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());

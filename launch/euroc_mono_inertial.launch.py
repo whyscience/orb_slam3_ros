@@ -21,10 +21,10 @@ def generate_launch_description():
             executable='ros_mono_inertial',
             name='orb_slam3',
             output='screen',
-            remappings=[
-                ('/camera/image_raw', '/cam0/image_raw'),
-                ('/imu/data', '/imu0')
-            ],
+            # remappings=[
+            #     ('/camera/image_raw', '/cam0/image_raw'),
+            #     ('/imu/data', '/imu0')
+            # ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'EuRoC.yaml')},
@@ -32,6 +32,9 @@ def generate_launch_description():
                 {'cam_frame_id': 'camera'},
                 {'imu_frame_id': 'imu'},
                 {'enable_pangolin': True},
+                {'use_compressed': False},
+                {'imu_topic': '/imu0'},
+                {'image_topic': '/cam0/image_raw'},
                 {'use_sim_time': LaunchConfiguration('use_sim_time')}
             ]
         ),

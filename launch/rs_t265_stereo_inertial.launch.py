@@ -24,7 +24,7 @@ def generate_launch_description():
             remappings=[
                 ('/camera/left/image_raw', '/camera/fisheye1/image_raw'),
                 ('/camera/right/image_raw', '/camera/fisheye2/image_raw'),
-                ('/imu', '/camera/imu')
+                ('/imu/data', '/camera/imu')
             ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},

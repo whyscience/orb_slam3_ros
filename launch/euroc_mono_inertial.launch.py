@@ -23,7 +23,7 @@ def generate_launch_description():
             output='screen',
             remappings=[
                 ('/camera/image_raw', '/cam0/image_raw'),
-                ('/imu', '/imu0')
+                ('/imu/data', '/imu0')
             ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},

@@ -18,9 +18,9 @@
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/compressed_image.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <sensor_msgs/msg/compressed_image.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -40,7 +40,7 @@ extern std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
 extern ORB_SLAM3::System::eSensor sensor_type;
 
 extern std::string world_frame_id, cam_frame_id, imu_frame_id;
-inline std::string default_voc_file = std::string(PROJECT_SOURCE_DIR) + "/orb_slam3/Vocabulary/ORBvoc.txt.bin";
+inline std::string default_voc_file = std::string(PROJECT_SOURCE_DIR) + "/orb_slam3/Vocabulary/ORBvoc.txt";//.bin
 
 extern rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
 extern rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;

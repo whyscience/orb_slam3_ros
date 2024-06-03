@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
     std::string img_left_topic = "/camera/right/image_raw";
     std::string img_right_topic = "/camera/left/image_raw";
-    std::string imu_topic = "/imu";
+    std::string imu_topic = "/imu/data";
 
     //debug code
     // img_left_topic = "/cam0/image_raw";

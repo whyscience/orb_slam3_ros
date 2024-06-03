@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     image_transport::ImageTransport image_transport(node);
     tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
-    std::string imu_topic = "/imu";
+    std::string imu_topic = "/imu/data";
     std::string image_topic = "/camera/image_raw";
     std::string image_topic_compressed = "/camera/image_raw/compressed";
 
@@ -63,11 +63,12 @@ int main(int argc, char **argv)
     // imu_topic = "/imu0";
     // image_topic = "/cam0/image_raw";
     image_topic_compressed = "/camera/color/image_raw/compressed";
+    // default_voc_file = "/home/eric/ws_orb3_ros2/src/ORB_SLAM3_ROS2/orb_slam3/Vocabulary/ORBvoc.txt";
 
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", default_voc_file);
     node->declare_parameter<std::string>("settings_file",
-                                         std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/EuRoC.yaml");
+                                         std::string(PROJECT_SOURCE_DIR) + "/config/Monocular-Inertial/sony_8mm_bno055.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());
@@ -132,8 +133,8 @@ void ImageGrabber::GrabImageCompressed(const sensor_msgs::msg::CompressedImage::
     // msg -> sensor_msgs::Image &img_msg
     //  Convert the compressed image to an OpenCV Mat
     cv::Mat compressed_image = cv::imdecode(cv::Mat(compressed_msg->data), cv::IMREAD_COLOR);
-    cv::imshow("compressed_image", compressed_image);
-    cv::waitKey(1);
+    // cv::imshow("compressed_image", compressed_image);
+    // cv::waitKey(1);
 
     if (compressed_image.empty())
     {
@@ -249,6 +250,7 @@ void ImageGrabber::SyncWithImu()
 
 void ImuGrabber::GrabImu(const sensor_msgs::msg::Imu::SharedPtr imu_msg)
 {
+    RCLCPP_INFO_ONCE(rclcpp::get_logger("rclcpp"), "GrabImu");
     mBufMutex.lock();
     imuBuf.push(imu_msg);
     mBufMutex.unlock();

@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     std::string rgb_img_topic = "/camera/rgb/image_raw";
     std::string depth_img_topic = "/camera/depth_registered/image_raw";
-    std::string imu_topic = "/imu";
+    std::string imu_topic = "/imu/data";
 
     //debug code
     // rgb_img_topic = "/cam0/image_raw";

@@ -17,6 +17,7 @@
         <param name="cam_frame_id"      type="string"   value="camera" />
         <param name="imu_frame_id"      type="string"   value="imu" />
         <param name="enable_pangolin"   type="bool"     value="true" />
+        <param name="use_compressed"   type="bool"     value="true" />
     </node>
     
     <!-- Visualization -->

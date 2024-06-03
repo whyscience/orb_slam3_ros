@@ -20,6 +20,8 @@
 #include <std_msgs/Header.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
+//sensor_msgs::CompressedImage
+#include <sensor_msgs/CompressedImage.h>
 #include <nav_msgs/Odometry.h>
 #include <visualization_msgs/Marker.h>
 

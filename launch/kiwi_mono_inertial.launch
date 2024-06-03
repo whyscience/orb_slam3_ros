@@ -6,6 +6,7 @@
         <!-- change the topics according to the dataset -->
         <!--/imu/data /camera/live_view_raw-->
         <remap from="/camera/image_raw"     to="/camera/live_view_raw"/>
+        <remap from="/camera/image_raw/compressed"     to="/camera/color/image_raw/compressed"/>
         <remap from="/imu"                  to="/imu/data"/>
 
         <!-- Parameters for original ORB-SLAM3 -->

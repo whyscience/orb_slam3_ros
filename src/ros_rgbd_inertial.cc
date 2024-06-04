@@ -76,8 +76,10 @@ int main(int argc, char **argv)
     // depth_img_topic = "/cam1/image_raw";
     // imu_topic = "/imu0";
 
+    auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+    qos.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(
-            imu_topic, 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
+            imu_topic, /*1000*/qos, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
 
     auto sub_rgb_img =
             std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(node, rgb_img_topic);

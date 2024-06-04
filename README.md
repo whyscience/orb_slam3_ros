@@ -248,6 +248,12 @@ https://github.com/UZ-SLAMLab/ORB_SLAM3/issues/681
 
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container
 
+## Debug with RealSense D455
+
+- https://blog.csdn.net/weixin_46135347/article/details/121771922
+- https://www.cnblogs.com/Pyrokine/p/16991385.html#!comments
+- https://blog.csdn.net/weixin_56750372/article/details/124694443
+
 ## To-do:
 
 - ~~Publish basic topics (camera pose, tracking image and point cloud)~~

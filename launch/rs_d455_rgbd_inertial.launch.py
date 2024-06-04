@@ -18,7 +18,7 @@ def generate_launch_description():
 
         Node(
             package='orb_slam3_ros',
-            executable='ros_rgbd',
+            executable='ros_rgbd_inertial',
             name='orb_slam3',
             output='screen',
             remappings=[
@@ -28,7 +28,7 @@ def generate_launch_description():
             ],
             parameters=[
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
-                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'RGB-D',
+                {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'RGB-D-Inertial',
                                                'RealSense_D435i.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},

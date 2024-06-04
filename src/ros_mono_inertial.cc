@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     std::string voc_file, settings_file;
     node->declare_parameter<std::string>("voc_file", default_voc_file);
     node->declare_parameter<std::string>("settings_file", std::string(PROJECT_SOURCE_DIR) +
-                                                                  "/config/Monocular-Inertial/usb_cam_fisheye.yaml");
+                                                                  "/config/Monocular-Inertial/usb_cam_bno055.yaml");
     node->get_parameter("voc_file", voc_file);
     node->get_parameter("settings_file", settings_file);
     RCLCPP_INFO(logger, "voc_file: %s, settings_file: %s", voc_file.c_str(), settings_file.c_str());

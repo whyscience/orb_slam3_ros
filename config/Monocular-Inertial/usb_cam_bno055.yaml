@@ -1,0 +1,112 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+File.version: "1.0"
+
+Camera.type: "KannalaBrandt8"
+
+#cam0:
+#  cam_overlaps: []
+#  camera_model: omni
+#  distortion_coeffs: [-0.2164183579012296, 1.2118917641657263, 0.011930445978063219, -0.01990071772631688]
+#  distortion_model: radtan
+#  intrinsics: [2.629884563261398, 1257.5082822077213, 1256.2141907559333, 339.4420229585856, 219.75586079455894]
+#  resolution: [640, 480]
+#  rostopic: /camera/live_view_back
+
+# intrinsics: [1.9313422063757062, 989.9750731166325, 989.4290297853538, 332.87652585571936, 233.10720416500058]
+Camera1.fx: 989.9750731166325
+Camera1.fy: 989.4290297853538
+Camera1.cx: 332.87652585571936
+Camera1.cy: 233.10720416500058
+
+Camera1.k1: -0.2164183579012296
+Camera1.k2: 1.2118917641657263
+Camera1.k3: 0.011930445978063219
+Camera1.k4: -0.01990071772631688
+
+# Camera resolution
+Camera.width: 640
+Camera.height: 480
+
+# Camera frames per second
+Camera.fps: 30
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+# Image scale, it changes the image size to be processed (<1.0: reduce, >1.0: increase)
+Camera.imageScale: 1.0
+
+# T_ic: (cam0 to imu0):
+#[[-0.05774285 0.00082731 0.99833115 -0.00019662]
+#[-0.99717434 0.04808554 -0.05771579 0.00176292]
+#[-0.04805304 -0.99884288 -0.00195163 -0.00192997]
+#[ 0. 0. 0. 1.]]
+
+#  [[ 0.05284581 -0.05361238 -0.99716249 0.07238865]
+#    [ 0.99785087 0.04157544 0.05064699 0.42074009]
+#    [ 0.03874216 -0.99769594 0.05569425 0.20111806]
+#    [ 0.0. 0. 1.]]
+#timeshift cam0 to imu0: [s] (t_imu = t_cam + shift)
+
+# Transformation from camera to body-frame (imu)
+IMU.T_b_c1: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [0.05284581, -0.05361238, -0.99716249, 0.07238865,
+         0.99785087, 0.04157544, 0.05064699, 0.42074009,
+         0.03874216, -0.99769594, 0.05569425, 0.20111806,
+         0.0, 0.0, 0.0, 1.0]
+
+##Accelerometers
+#accelerometer_noise_density: 1.4516759743143148e-02   #Noise density (continuous-time)
+#accelerometer_random_walk:   8.6660738806690937e-04   #Bias random walk
+##Gyroscopes
+#gyroscope_noise_density:     1.3034847149908269e-03   #Noise density (continuous-time)
+#gyroscope_random_walk:       7.8724489070247425e-06   #Bias random walk
+
+# IMU noise (Use those from VINS-mono)
+IMU.NoiseGyro:  1.3034847149908269e-03 # rad/s^0.5
+IMU.NoiseAcc: 1.4516759743143148e-02 # m/s^1.5
+IMU.GyroWalk: 7.8724489070247425e-06 # rad/s^1.5
+IMU.AccWalk: 8.6660738806690937e-04 # m/s^2.5
+IMU.Frequency: 100.0
+
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -3.5
+Viewer.ViewpointF: 500.0

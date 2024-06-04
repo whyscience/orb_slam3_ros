@@ -65,7 +65,7 @@ Stereo.ThDepth: 40.0
 # IMU Parameters
 #--------------------------------------------------------------------------------------------
 
-# Transformation from body-frame (imu) to left camera
+# Transformation from left camera to body-frame (imu)
 IMU.T_b_c1: !!opencv-matrix
    rows: 4
    cols: 4

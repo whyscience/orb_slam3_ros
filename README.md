@@ -210,14 +210,13 @@ docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 
 
 ```
 
-
 ```bash
 # https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr
 pip3 install rosbags>=0.9.12 # might need -U
 rosbags-convert --src <ros2_bag_folder> --dst calib_01.bag --exclude-topic <non_img_and_imu_topics>
 
-ROS1_BAG="usb-cam-bno055.bag"
-rosbags-convert --src rosbag2_2024_05_31-18_46_27-BNO055-SONY/ --dst $ROS1_BAG
+ROS1_BAG="usb-cam-bno055"
+rosbags-convert --dst "$ROS1_BAG".bag --src rosbag2_2024_05_31-18_46_27-BNO055-SONY/
 
 FOLDER=$(pwd)
 xhost +local:root
@@ -228,16 +227,24 @@ source devel/setup.bash
 
 # Try ['pinhole-radtan', 'pinhole-equi', 'pinhole-fov', 'omni-none', 'omni-radtan', 'eucm-none', 'ds-none'].
 # use omni-radtan for KannalaBrandt8
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/$ROS1_BAG --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/usb-cam-bno055-cali-camchain.yaml --bag /data/$ROS1_BAG
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/"$ROS1_BAG".bag --target /data/checkerboard.yaml --models omni-radtan --topics /camera/live_view_back
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/"$ROS1_BAG"-camchain.yaml --bag /data/"$ROS1_BAG".bag
 
 #usb-cam-bno055-sony-kiwi-104.bag
-rosrun kalibr kalibr_calibrate_cameras  --bag /data/$ROS1_BAG --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_raw
-rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/bno055-sony-kiwi-104-camchain.yaml --bag /data/$ROS1_BAG
+rosrun kalibr kalibr_calibrate_cameras  --bag /data/"$ROS1_BAG".bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_raw
+rosrun kalibr kalibr_calibrate_imu_camera  --target /data/checkerboard.yaml  --imu /data/imu.yaml  --imu-models calibrated  --cam /data/"$ROS1_BAG"-camchain.yaml --bag /data/"$ROS1_BAG".bag
 
 # rosrun kalibr kalibr_calibrate_cameras  --bag /data/usb-cam-bno055-cali.bag --target /data/checkerboard.yaml --models pinhole-radtan --topics /camera/live_view_back
 
 ```
+
+如果您使用 Kalibr 进行 Camera-IMU 外部校准，为了在立体惯性模式下运行 ORB-SLAM3，您需要设置两个矩阵：
+https://github.com/UZ-SLAMLab/ORB_SLAM3/issues/681
+
+1. IMU.T_b_c1：这是从左相机坐标系到 IMU 坐标系的变换（左相机相对于 IMU 坐标系的姿势）。在 Kalibr 的报告中，它对应于T_ic:  (
+   cam0 to imu0)。
+2. Stereo.T_c1_c2：这是从右相机到左相机的变换（右相机姿势相对于左相机框架）。要获得这种变换，Baseline (cam0 to cam1)应该反转
+   Kalibr 中的。这里假设左相机对应于cam0。
 
 > **_NOTE:_**  `--network host` is recommended to listen to rostopics outside the container
 

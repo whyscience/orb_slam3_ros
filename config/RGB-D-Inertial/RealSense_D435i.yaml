@@ -34,7 +34,7 @@ Stereo.b: 0.0745
 # Depth map values factor
 RGBD.DepthMapFactor: 1000.0
 
-# Transformation from body-frame (imu) to left camera
+# Transformation from left camera to body-frame (imu)
 IMU.T_b_c1: !!opencv-matrix
    rows: 4
    cols: 4

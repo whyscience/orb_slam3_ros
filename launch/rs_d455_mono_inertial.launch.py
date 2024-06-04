@@ -1,10 +1,9 @@
 import os
-
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -19,16 +18,22 @@ def generate_launch_description():
 
         Node(
             package='orb_slam3_ros',
-            executable='ros_mono',
+            executable='ros_mono_inertial',
             name='orb_slam3',
             output='screen',
+            # remappings=[
+            #     ('/camera/image_raw', '/cam0/image_raw'),
+            #     ('/imu/data', '/imu0')
+            # ],
             parameters=[
+                {'use_compressed': False},
+                {'imu_topic': '/camera/camera/imu'},
                 {'image_topic': '/camera/camera/color/image_raw'},
-                {'image_topic_compressed': '/camera/color/image_raw/compressed'},
                 {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'RealSense_D435i.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},
+                {'imu_frame_id': 'imu'},
                 {'enable_pangolin': True},
                 {'use_sim_time': LaunchConfiguration('use_sim_time')}
             ]
@@ -39,7 +44,7 @@ def generate_launch_description():
         #     executable='rviz2',
         #     name='rviz',
         #     output='screen',
-        #     arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_no_imu.rviz')]
+        #     arguments=['-d', os.path.join(orb_slam3_ros_share_dir, 'config', 'orb_slam3_with_imu.rviz')]
         # ),
 
         # Node(
@@ -50,7 +55,7 @@ def generate_launch_description():
         #     output='screen',
         #     parameters=[
         #         {'/target_frame_name': '/world'},
-        #         {'/source_frame_name': '/camera'},
+        #         {'/source_frame_name': '/imu'},
         #         {'/trajectory_update_rate': 20.0},
         #         {'/trajectory_publish_rate': 20.0}
         #     ]

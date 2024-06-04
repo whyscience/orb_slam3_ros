@@ -8,21 +8,22 @@ File.version: "1.0"
 Camera.type: "PinHole"
 
 # Right Camera calibration and distortion parameters (OpenCV)
-Camera1.fx: 617.201
-Camera1.fy: 617.362
-Camera1.cx: 324.637
-Camera1.cy: 242.462
-
+Camera1.fx: 642.981872558594
+Camera1.fy: 642.320678710938
+Camera1.cx: 635.982971191406
+Camera1.cy: 364.792755126953
 
 # distortion parameters
-Camera1.k1: 0.0
-Camera1.k2: 0.0
-Camera1.p1: 0.0
-Camera1.p2: 0.0
+# For "plumb_bob", the 5 parameters are: (k1, k2, t1, t2, k3).
+Camera1.k1: -0.0530853755772114
+Camera1.k2: 0.0618362724781036
+Camera1.p1: 0.000243115719058551
+Camera1.p2: -0.000230992809520103
+Camera1.k3: -0.0197865590453148
 
 # Camera resolution
-Camera.width: 640
-Camera.height: 480
+Camera.width: 1280
+Camera.height: 720
 
 # Camera frames per second 
 Camera.fps: 30

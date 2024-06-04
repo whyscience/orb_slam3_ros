@@ -93,8 +93,11 @@ int main(int argc, char **argv)
     ImuGrabber imugb;
     ImageGrabber igb(&imugb);
 
+    //BEST_EFFORT
+    auto qos = rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_default));
+    qos.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
     auto sub_imu = node->create_subscription<sensor_msgs::msg::Imu>(
-            imu_topic, 1000, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
+            imu_topic, qos, std::bind(&ImuGrabber::GrabImu, &imugb, std::placeholders::_1));
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img;
     rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img_compressed;

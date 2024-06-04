@@ -29,15 +29,24 @@ Camera.fps: 30
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
+
+#Extrinsic from "Color"	  To	  "Accel" :
+#  Rotation Matrix:
+#    0.999992         0.00230452      -0.00320497
+#    -0.00231031       0.999996        -0.00180473
+#    0.0032008        0.00181212       0.999993
+#
+#  Translation Vector: 0.0288530867546797  0.00733684375882149  0.0157747305929661
+
 # Transformation from left camera to body-frame (imu)
 IMU.T_b_c1: !!opencv-matrix
    rows: 4
    cols: 4
    dt: f
-   data: [1,0,0,-0.005,
-         0,1,0,-0.005,
-         0,0,1,0.0117,
-         0.0, 0.0, 0.0, 1.0]
+   data: [0.999992, 0.00230452, -0.00320497, 0.0288530867546797,
+          -0.00231031, 0.999996, -0.00180473, 0.00733684375882149,
+          0.0032008, 0.00181212, 0.999993, 0.0157747305929661,
+          0.0, 0.0, 0.0, 1.0]
 
 # Do not insert KFs when recently lost
 IMU.InsertKFsWhenLost: 0

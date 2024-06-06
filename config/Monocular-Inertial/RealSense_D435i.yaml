@@ -67,7 +67,6 @@ IMU.T_b_c1: !!opencv-matrix
 # Do not insert KFs when recently lost
 IMU.InsertKFsWhenLost: 0
 
-# https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/issues/41#issuecomment-641863166
 # IMU noise (Use those from VINS-mono)
 #  gyr_n: 2.1169715418919849e-03
 #  gyr_w: 2.3467885312103409e-05

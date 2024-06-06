@@ -127,6 +127,13 @@ namespace ORB_SLAM3
         }
 
         mStrVocabularyFilePath = strVocFile;
+        //check if file exists
+        ifstream f(mStrVocabularyFilePath);
+        if (!f.good())
+        {
+            cerr << "Vocabulary file does not exist at " << mStrVocabularyFilePath << endl;
+            exit(-1);
+        }
 
         // ORBSLAM3新加的多地图管理功能，这里加载Atlas标识符
         bool loadedAtlas = false;

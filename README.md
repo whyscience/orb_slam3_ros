@@ -61,7 +61,7 @@ colcon build --symlink-install
 ```bash
 # In one terminal:
 ros2 launch orb_slam3_ros ntuviral_mono.launch.py
-# In another terminal:
+# In another terminal: [rs_d455_mono_inertial.launch.py](launch%2Frs_d455_mono_inertial.launch.py)
 ros2 bag play eee_01 -s 50 # The UAV starts moving at t~50s
 ```
 
@@ -206,9 +206,13 @@ docker run --network host --privileged -v /dev:/dev -it [image_name]
 
 xhost+
 docker run -it --rm --privileged -v ~/ws_orb_slam3_ros1:/root/ws_orb_slam3_ros1 -v ~/Downloads:/root/Downloads/:rw -v /dev:/dev -v /tmp/.X11-unix:/tmp/.X11-unix:ro -e DISPLAY=:0 --name=orb_slam3_ros1 orb_slam3_ros1:latest bash
-
-
 ```
+
+## IMU Calibration
+https://blog.csdn.net/QLeelq/article/details/114652777
+![img.png](img.png)
+
+## Kalibr Calibration
 
 ```bash
 # https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr
@@ -220,9 +224,10 @@ rosbags-convert --dst "$ROS1_BAG".bag --src rosbag2_2024_05_31-18_46_27-BNO055-S
 
 FOLDER=$(pwd)
 xhost +local:root
-docker run -it -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
+docker run -it --rm -e "DISPLAY" -e "QT_X11_NO_MITSHM=1" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
     -v "$FOLDER:/data" kalibr
+
 source devel/setup.bash
 
 # Try ['pinhole-radtan', 'pinhole-equi', 'pinhole-fov', 'omni-none', 'omni-radtan', 'eucm-none', 'ds-none'].

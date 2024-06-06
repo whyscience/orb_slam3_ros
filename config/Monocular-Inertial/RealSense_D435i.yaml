@@ -67,15 +67,22 @@ IMU.T_b_c1: !!opencv-matrix
 # Do not insert KFs when recently lost
 IMU.InsertKFsWhenLost: 0
 
+# https://github.com/HKUST-Aerial-Robotics/VINS-Fusion/issues/41#issuecomment-641863166
 # IMU noise (Use those from VINS-mono)
-IMU.NoiseGyro: 1e-3 # 2.44e-4 #1e-3 # rad/s^0.5
-IMU.NoiseAcc: 1e-2 # 1.47e-3 #1e-2 # m/s^1.5
-IMU.GyroWalk: 1e-6 # rad/s^1.5
-IMU.AccWalk: 1e-4 # m/s^2.5
+#  gyr_n: 2.1169715418919849e-03
+#  gyr_w: 2.3467885312103409e-05
+#  acc_n: 3.3084340531553652e-02
+#  acc_w: 1.8726321493510575e-03
+#  They need to be provided at the calibration file, with m/s2/√Hz and rad/s/√Hz units,
+#  the same as output of https://github.com/gaowenliang/imu_utils and https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model
+IMU.NoiseGyro: 2.1169715418919849e-03 # rad/s^0.5
+IMU.NoiseAcc: 3.3084340531553652e-02 # m/s^1.5
+IMU.GyroWalk: 2.3467885312103409e-05 # rad/s^1.5
+IMU.AccWalk: 1.8726321493510575e-03 # m/s^2.5
 IMU.Frequency: 200.0
 
 #--------------------------------------------------------------------------------------------
-# ORB Parameters
+# ORB Parameters rs_d455_mono.launch.py rs_d455_mono_inertial.launch.py
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
 ORBextractor.nFeatures: 1250

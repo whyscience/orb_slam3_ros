@@ -3280,7 +3280,8 @@ namespace ORB_SLAM3
         for (map<int, int>::iterator mit = mVisEdges.begin(), mend = mVisEdges.end(); mit != mend; mit++)
         {
             //assert(mit->second >= 3);
-            cerr << "Warning: KeyFrame " << mit->first << " has " << mit->second << " observations" << endl;
+            if(mit->second < 3)
+                cerr << "Warning: KeyFrame " << mit->first << " has " << mit->second << " observations" << endl;
         }
 
         // 12. 开始优化

@@ -264,6 +264,7 @@ Intrinsic Parameters:
   Coeffs:     	-0.0530853755772114  	0.0618362724781036  	0.000243115719058551  	-0.000230992809520103  	-0.0197865590453148
   FOV (deg):  	89.73 x 58.54
 
+#640x480x30
  Intrinsic of "Color" / 640x480 / {YUYV/RGB8/BGR8/RGBA8/BGRA8/Y8}
   Width:      	640
   Height:     	480

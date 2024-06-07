@@ -27,7 +27,7 @@ def generate_launch_description():
                 ('/imu/data', '/camera/camera/imu')
             ],
             parameters=[
-                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
+                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'RGB-D',
                                                'RealSense_D435i.yaml')},
                 {'world_frame_id': 'world'},

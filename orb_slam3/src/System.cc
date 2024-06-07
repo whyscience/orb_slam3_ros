@@ -285,7 +285,8 @@ namespace ORB_SLAM3
 
         // Fix verbosity
         // 打印输出中间的信息，设置为安静模式
-        Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+        //Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+        Verbose::SetTh(Verbose::VERBOSITY_DEBUG);
     }
 
     Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp,
@@ -603,11 +604,11 @@ namespace ORB_SLAM3
         mpLocalMapper->RequestFinish();
         mpLoopCloser->RequestFinish();
         /*if(mpViewer)
-    {
-        mpViewer->RequestFinish();
-        while(!mpViewer->isFinished())
-            usleep(5000);
-    }*/
+        {
+            mpViewer->RequestFinish();
+            while(!mpViewer->isFinished())
+                usleep(5000);
+        }*/
 
         // Wait until all thread have effectively stopped
         // 源代码这里注释掉了，但是不执行会有锁报错
@@ -1700,6 +1701,8 @@ twc.at<float>(2) << endl;
     bool System::SaveMap(const string &filename)
     {
         mStrSaveAtlasToFile = filename;
+        if(mStrSaveAtlasToFile.empty())
+            mStrSaveAtlasToFile = "auto_save_map_" + getTimeStamp();
         if (!mStrSaveAtlasToFile.empty())
         {
             Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile, Verbose::VERBOSITY_NORMAL);

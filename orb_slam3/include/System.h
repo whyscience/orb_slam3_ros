@@ -41,6 +41,20 @@
 #include "Tracking.h"
 #include "Viewer.h"
 
+inline std::string getTimeStamp()
+{
+    using std::chrono::system_clock;
+    system_clock::time_point tp = system_clock::now();
+    time_t raw_time = system_clock::to_time_t(tp);
+
+    // tm*使用完后不用delete，因为tm*是由localtime创建的，并且每个线程中会有一个
+    struct tm *time_info = std::localtime(&raw_time);
+    char buffer[80];
+
+    // strftime(buffer, sizeof(buffer), "%H:%M:%S ", time_info);
+    strftime(buffer, sizeof(buffer), "%T", time_info);
+    return buffer;
+}
 
 namespace ORB_SLAM3
 {

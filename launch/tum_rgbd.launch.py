@@ -26,7 +26,7 @@ def generate_launch_description():
                 ('/camera/depth_registered/image_raw', '/camera/depth/image')
             ],
             parameters=[
-                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
+                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'RGB-D', 'TUM1.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},

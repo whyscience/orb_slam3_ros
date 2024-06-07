@@ -25,22 +25,6 @@ image_transport::Publisher tracking_img_pub;
 //////////////////////////////////////////////////
 // Main functions
 //////////////////////////////////////////////////
-
-std::string getTimeStamp()
-{
-    using std::chrono::system_clock;
-    system_clock::time_point tp = system_clock::now();
-    time_t raw_time = system_clock::to_time_t(tp);
-
-    // tm*使用完后不用delete，因为tm*是由localtime创建的，并且每个线程中会有一个
-    struct tm *time_info = std::localtime(&raw_time);
-    char buffer[80];
-
-    // strftime(buffer, sizeof(buffer), "%H:%M:%S ", time_info);
-    strftime(buffer, sizeof(buffer), "%T", time_info);
-    return buffer;
-}
-
 bool save_map_srv(const std::shared_ptr<std_srvs::srv::SetBool::Request> req,
                   std::shared_ptr<std_srvs::srv::SetBool::Response> res)
 {

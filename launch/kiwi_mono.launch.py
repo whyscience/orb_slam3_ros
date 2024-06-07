@@ -27,7 +27,7 @@ def generate_launch_description():
             parameters=[
                 {'image_topic': '/camera/live_view_back'},
                 {'image_topic_compressed': '/camera/color/image_raw/compressed'},
-                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt.bin')},
+                {'voc_file': os.path.join(orb_slam3_ros_share_dir, 'orb_slam3', 'Vocabulary', 'ORBvoc.txt')},
                 {'settings_file': os.path.join(orb_slam3_ros_share_dir, 'config', 'Monocular-Inertial', 'usb_cam_bno055.yaml')},
                 {'world_frame_id': 'world'},
                 {'cam_frame_id': 'camera'},

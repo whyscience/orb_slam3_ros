@@ -21,10 +21,6 @@ def generate_launch_description():
             executable='ros_mono_inertial',
             name='orb_slam3',
             output='screen',
-            # remappings=[
-            #     ('/camera/image_raw', '/cam0/image_raw'),
-            #     ('/imu/data', '/imu0')
-            # ],
             parameters=[
                 {'use_compressed': False},
                 {'imu_topic': '/camera/camera/imu'},

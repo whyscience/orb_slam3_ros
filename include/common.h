@@ -41,7 +41,7 @@ extern ORB_SLAM3::System::eSensor sensor_type;
 extern rclcpp::Clock::SharedPtr clock_;
 
 extern std::string world_frame_id, cam_frame_id, imu_frame_id;
-inline std::string default_voc_file = std::string(PROJECT_SOURCE_DIR) + "/orb_slam3/Vocabulary/ORBvoc.txt";//.bin
+inline std::string default_voc_file = std::string(PROJECT_SOURCE_DIR) + "/orb_slam3/Vocabulary/ORBvoc.txt"; //.bin
 
 extern rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
 extern rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
@@ -74,8 +74,7 @@ cv::Mat SE3f_to_cvMat(const Sophus::SE3f &);
 geometry_msgs::msg::Transform SE3f_to_tfTransform(Sophus::SE3f);
 sensor_msgs::msg::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint *>, const rclcpp::Time &);
 
-inline double
-toSec(const builtin_interfaces::msg::Time &time) // do not convert to const rclcpp::Time &time, it is wrong!
+inline double toSec(const builtin_interfaces::msg::Time &time) // do not convert to const rclcpp::Time &time
 {
     return time.sec + time.nanosec * 1e-9;
 }
